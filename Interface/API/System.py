@@ -63,6 +63,10 @@ class system:
     return S_OK()
 
   def resubmit( self, infoDict ):
+   """
+     Re-submit sub-jobs of a workflow
+     infoDict{'jobNum':workflowID, 'stepNum':stepID, 'optionList':[optionNames...]}
+   """
     jobNum = infoDict['jobNum']
     tempJob = Job( '', self.tempDirectory + str( jobNum ) + '.xml' )
     stepNum = infoDict['stepNum']
@@ -81,7 +85,11 @@ class system:
       optionDirectory = optionTempDirectory
     for optionFile in infoDict['optionList']:
       os.chdir( optionDirectory )
-      os.system( 'boss -q %s' % optionFile )
+      os.system( 'boss -q %s' % optionFile )i
+    return S_OK()
 
   def checkStatus( self, jobName ):
+   """
+    get the status of the workflow
+   """
     return checkStatus( jobName )
