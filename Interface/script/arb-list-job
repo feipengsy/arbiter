@@ -13,7 +13,12 @@ if sys.argv[1] == 'u' or sys.argv[1] == 'U' or sys.argv[1] == '-u' or sys.argv[1
   username = sys.argv[2]
 
 MDC = system()
-jobList = MDC.listJob( username )
+result = MDC.listJob( username )
+if result['OK']:
+  jobList = result['Value']
+else:
+  print result['Error']
+  sys.exit(0)
 
 lis = []
 for job in jobList:
