@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+from arbiter.Interface.API.System import *
+import sys
+
+MDC = system()
+jobName = str( sys.argv[1] )
+if jobName == 'h' or jobName == 'H' or jobName == '-h' or jobName == '-H':
+  print 'usage: MDC-check-status [workflowID]'
+  sys.exit(0)
+statusDict = MDC.checkStatus( jobName )
+for stepCount, stepStatusDict in statusDict.items():
+  print 'step' + str(stepCount) + 'status:'
+  for job, jobStatus in stepStatusDict.items():
+    print job + ':' + jobStatus

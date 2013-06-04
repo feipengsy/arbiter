@@ -1,0 +1,19 @@
+#!/usr/bin/env python
+from arbiter.Interface.API.System import *
+import sys
+
+if sys.argv[1] == 'h' or sys.argv[1] == 'H' or sys.argv[1] == '-h' or sys.argv[1] == '-H':
+  print 'usage: MDC-resubmit-unDone [workflowID] [stepID]'
+  print 'It will re-submit all unfinished subjobs'
+  sys.exit(0)
+
+MDC = system()
+jobNum = str( sys.argv[1] )
+stepNum = str( sys.argv[2] )
+statusDict = MDC.checkStatus( jobNum )
+optionList = []
+for k,v in statusDict[int(stepNum)].items():
+  if v == 'failed':
+    optionList.append(k)
+MDC.resubmit( { 'jobNum': jobNum, 'stepNum': stepNum, 'optionList': optionList } )
+

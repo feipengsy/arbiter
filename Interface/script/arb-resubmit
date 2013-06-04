@@ -1,0 +1,16 @@
+#!/usr/bin/env python
+from arbiter.Interface.API.System import *
+import sys
+
+if sys.argv[1] == 'h' or sys.argv[1] == 'H' or sys.argv[1] == '-h' or sys.argv[1] == '-H':
+  print 'usage: MDC-resubmit [workflowID] [stepID] [jobOptionName1] [jobOptionName2]...'
+  print 'It will re-submit subjobs specified'
+  sys.exit(0)
+
+MDC = system()
+jobNum = str( sys.argv[1] )
+stepNum = str( sys.argv[2] )
+optionList = []
+for jobOption in sys.argv[3:]:
+  optionList.append(jobOption) 
+MDC.resubmit( { 'jobNum': jobNum, 'stepNum': stepNum, 'optionList': optionList } )

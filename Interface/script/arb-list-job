@@ -1,0 +1,25 @@
+#!/usr/bin/env python
+from arbiter.Interface.API.System import *
+
+if len( sys.argv ) < 2:
+  print 'usage: MDC-list-job -u username'
+  sys.exit(0)
+
+if sys.argv[1] == 'h' or sys.argv[1] == 'H' or sys.argv[1] == '-h' or sys.argv[1] == '-H':
+  print 'usage: MDC-list-job -u username'
+  sys.exit(0)
+
+if sys.argv[1] == 'u' or sys.argv[1] == 'U' or sys.argv[1] == '-u' or sys.argv[1] == '-U':
+  username = sys.argv[2]
+
+MDC = system()
+jobList = MDC.listJob( username )
+
+lis = []
+for job in jobList:
+  lis.append(job[0])
+lis.sort()
+for num in lis:
+  for job in jobList:
+    if job[0] == num:
+      print str(job[0]) + '   ' + str(job[1]) + '   ' + str(job[2]) + '   ' + str(job[3]) + '   ' 
