@@ -6,7 +6,7 @@ class dbTool:
     pass
 
   def connect( self ):
-    conn = MySQLdb.connect(host="offline.ihep.ac.cn",user="arbuser",passwd="123456",db="arbiterDB")
+    conn = MySQLdb.connect(host="DBHOSTNAME",user="DBUSER",passwd="DBPASSWORD",db="arbiterDB")
     return conn    
 
   def addJob( self, job ):
