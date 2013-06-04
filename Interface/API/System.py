@@ -85,7 +85,7 @@ class system:
       optionDirectory = optionTempDirectory
     for optionFile in infoDict['optionList']:
       os.chdir( optionDirectory )
-      os.system( 'boss -q %s' % optionFile )i
+      os.system( 'boss -q %s' % optionFile )
     return S_OK()
 
   def checkStatus( self, jobName ):
