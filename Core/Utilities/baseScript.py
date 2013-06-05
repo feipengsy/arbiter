@@ -1,4 +1,4 @@
-from arbiter.Core.Utilities.returnValues import *
+from arbiter.Core.Utilities.ReturnValues import *
 
 class baseScript:
 
