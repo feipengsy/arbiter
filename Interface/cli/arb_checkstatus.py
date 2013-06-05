@@ -10,7 +10,7 @@ class arb_checkstatus(baseScript):
   """
 
   def __init__( self, argv ):
-    baseScript.__init__()
+    baseScript.__init__( self )
     self.argvDict = {}
     self.argv = argv
 
