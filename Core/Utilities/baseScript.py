@@ -9,12 +9,12 @@ class baseScript:
     for arg in self.argv:
       if arg.startswith( '--' ):
         oarg = arg.strip( '--' )
-        if oarg not in self.argvList:
+        if oarg not in self.argvDict.keys():
           return S_ERROR( self.__doc__ )
       elif arg.startswith( '-' ):
         oarg = arg.strip( '-' )
         for s in oarg:
-          if s not in self.argvList:
+          if s not in self.argvDict.keys():
             return S_ERROR( self.__doc__ )
     return S_OK()
 
