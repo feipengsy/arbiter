@@ -1,0 +1,16 @@
+#!/usr/bin/env python
+from arbiter.Interface.cli import *
+import sys
+
+errorMessage = ''
+argv = sys.agrv
+if not argv:
+  print errorMessage
+  sys.exit(0)
+command = 'arb_' + argv[0]
+if command not in globals().keys():
+  print errorMessage
+  sys.exit(0)
+comClass = globals()[command]
+comClass.execute( argv[1:] )
+
