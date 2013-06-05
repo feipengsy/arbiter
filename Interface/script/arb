@@ -3,7 +3,7 @@ from arbiter.Interface.cli import *
 import sys
 
 errorMessage = ''
-argv = sys.agrv
+argv = sys.argv
 if not argv:
   print errorMessage
   sys.exit(0)
