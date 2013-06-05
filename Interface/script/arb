@@ -7,10 +7,10 @@ argv = sys.argv
 if not argv:
   print errorMessage
   sys.exit(0)
-command = 'arb_' + argv[0]
+command = 'arb_' + argv[1]
 if command not in globals().keys():
   print errorMessage
   sys.exit(0)
-comClass = globals()[command]( argv[1:] )
+comClass = globals()[command]( argv[2:] )
 comClass.execute()
 
