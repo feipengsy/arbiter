@@ -28,45 +28,45 @@ class system:
     self.user = getUserName()
 
   def listJob( self, user ):
-   """
+    """
       Get the workflow list
       returns: S_OK,S_ERROR
-   """
+    """
     jobList = self.dbTool.getJobList( user )
     return S_OK( jobList )
 
   def generate( self, jobNum ):
-   """
+    """
       Generate option files of all steps
-   """
+    """
     xmlPath = self.tempDirectory + str( jobNum ) + '.xml'
     job = Job( '', xmlPath )
     job.generate()
     return S_OK()
 
   def execute( self, jobNum ):
-   """
+    """
      Execute the first step of the workflow locally
-   """
+    """
     xmlPath = self.tempDirectory + str( jobNum ) + '.xml'
     job = Job( '', xmlPath )
     job.execute()
     return S_OK()
 
   def submit( self, jobNum ):
-   """
+    """
      Submit the first step of the workflow to the queue
-   """
+    """
     xmlPath = self.tempDirectory + str( jobNum ) + '.xml'
     job = Job( '', xmlPath )
     job.submit()
     return S_OK()
 
   def resubmit( self, infoDict ):
-   """
+    """
      Re-submit sub-jobs of a workflow
      infoDict{'jobNum':workflowID, 'stepNum':stepID, 'optionList':[optionNames...]}
-   """
+    """
     jobNum = infoDict['jobNum']
     tempJob = Job( '', self.tempDirectory + str( jobNum ) + '.xml' )
     stepNum = infoDict['stepNum']
@@ -89,7 +89,7 @@ class system:
     return S_OK()
 
   def checkStatus( self, jobName ):
-   """
-    get the status of the workflow
-   """
+    """
+      get the status of the workflow
+    """
     return checkStatus( jobName )
