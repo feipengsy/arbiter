@@ -11,6 +11,6 @@ command = 'arb_' + argv[0]
 if command not in globals().keys():
   print errorMessage
   sys.exit(0)
-comClass = globals()[command]
-comClass.execute( argv[1:] )
+comClass = globals()[command]( argv[1:] )
+comClass.execute()
 
