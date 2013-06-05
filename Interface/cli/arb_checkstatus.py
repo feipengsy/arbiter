@@ -14,7 +14,7 @@ class arb_checkstatus(baseScript):
     self.argvDict = {}
     self.argv = argv
 
-  def execute( self )
+  def execute( self ):
     result = self.checkRationality()
     if not result['OK']:
       return False
