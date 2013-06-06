@@ -121,17 +121,17 @@ class Job:
         return S_ERROR( 'Can not create workflow.\nCreating workflow failed' )
     result = self.dbTool.addJob( self )
     if not result['OK']:
-      print 'Creating workflow failed'
+      print 'Fail to create workflow'
 
     # create directory for steps and add step info to the database
     for step in self.workflow.steps:
       result = step.createStep()
       if not result['OK']:
-        print 'Creating workflow failed'
+        print 'Fail to create workflow'
         return result
       result = self.dbTool.addStep( step )
       if not result['OK']:
-        print 'Creating workflow failed'
+        print 'Fail to create workflow'
         return result
     return S_OK()
 
