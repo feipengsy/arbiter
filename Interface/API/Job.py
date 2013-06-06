@@ -12,7 +12,8 @@ class Job:
     global tempDirectory
     self.tempDirectory = tempDirectory
     self.name = None
-    self.jobNum = None
+    self.jobID = None
+    self.debug = False
     self.workDirectory = os.getcwd()
     self.status = 'unSubmitted'
     self.user = ''
@@ -25,31 +26,32 @@ class Job:
     else:
       if name:
         self.setName( name )
+        self.workflow.jobName = name
       else:
         self.setName( 'unDefined' )
-      self.workflow.jobName = name
-    self.createJob()
+        self.workflow.jobName = 'unDefined'
+    self.initializeJob()
 
-  def createJob( self ):
-    if self.jobNum != None:
-      return S_OK( 'Job already created' )
+  def initializeJob( self ):
+    if self.jobID != None:
+    # this means job is already loaded from xml
+      return S_OK()
     else:
-      newNumString = str( self.dbTool.getNewWorkflowNum() )
-      dirDirectory = self.tempDirectory + 'workflowTemp/'
-      os.chdir( dirDirectory )
-      os.mkdir( newNumString )
+      newID = int( self.dbTool.getNewWorkflowID() )
+      #dirDirectory = self.tempDirectory + 'workflowTemp/'
+      #os.chdir( dirDirectory )
+      #os.mkdir( newNumString )
       self.user = getUserName()
-      self.jobNum = int( newNumString )
-      self.workflow.jobNum = self.jobNum
+      self.jobID = int( newID )
+      self.workflow.jobID = self.jobID
       self.workflow.user = self.user
-      self.dbTool.addJob( self )
+      #self.dbTool.addJob( self )
 
   def loadJob( self, script ):
     result = loadJobFromXML( self, script )
     return result
 
   def setName( self, jobName ):
-
     if not type( jobName ) == type( ' ' ):
       return S_ERROR( 'Expected a string for job name' )
     else:
@@ -64,9 +66,9 @@ class Job:
 
     if stepType not in self.workflow.typeList:
       return S_ERROR( 'There is no %s step type' % stepType )
-    self.workflow.addStep( stepType, stepName, self.jobNum )
+    self.workflow.addStep( stepType, stepName, self.jobID )
     self.stepCount += 1
-    self.dbTool.addStep( self )
+    #self.dbTool.addStep( self )
     return S_OK()
 
   def setStepParameter( self, stepUserName, name, value, extra = None, ptype = None ):
@@ -90,19 +92,48 @@ class Job:
 
   def toXMLFile( self ):
     ret = self.workflow.toXML()
-    xmlFile = open( self.tempDirectory + str( self.jobNum ) + '.xml', 'w' )
+    xmlFile = open( self.tempDirectory + str( self.jobID ) + '.xml', 'w' )
     xmlFile.write( ret )
     xmlFile.close()
-    print self.jobNum
+    print self.jobID
  
   def updateDB( self ):
-    for stepNum in range( self.stepCount ):
-      stepStatus = checkStepStatus( self.jobNum, stepNum )
-      statusDict = { self.jobNum : { stepNum: { 'status' : stepStatus } } }
+    for stepID in range( self.stepCount ):
+      stepStatus = checkStepStatus( self.jobID, stepID )
+      statusDict = { self.jobID : { stepID: { 'status' : stepStatus } } }
       self.dbTool.updateStep( statusDict )
-    workflowStatus = checkWorkflowStatus( self.jobNum )
-    workflowInfo = { 'jobNum' : self.jobNum, 'status' : workflowStatus }
-    self.dbTool.updateWorkflow( workflowInfo )    
+    workflowStatus = checkWorkflowStatus( self.jobID )
+    workflowInfo = { 'jobID' : self.jobID, 'status' : workflowStatus }
+    self.dbTool.updateWorkflow( workflowInfo )
+
+  def create( self ):
+    # create the directory for the whole workflow and add workflow info to the database
+    jobTempDirectory = self.tempDirectory + 'workflowTemp/'
+    if not os.path.exists( jobTempDirectory ):
+      return S_ERROR( 'cannot find the jobTempDirectory' )
+    jobDirectory = jobTempDirectory + str( self.jobID )
+    if os.path.exsits( jobDirectory ):
+      print 'WARNING:%s already exists, this may because you already called job.create(), here we just overwrite' % jobDirectory
+    else:
+      try:
+        os.mkdir( jobDirectory )
+      except:
+        return S_ERROR( 'Can not create workflow.\nCreating workflow failed' )
+    result = self.dbTool.addJob( self )
+    if not result['OK']:
+      print 'Creating workflow failed'
+
+    # create directory for steps and add step info to the database
+    for step in self.workflow.steps:
+      result = step.createStep()
+      if not result['OK']:
+        print 'Creating workflow failed'
+        return result
+      result = self.dbTool.addStep( step )
+      if not result['OK']:
+        print 'Creating workflow failed'
+        return result
+    return S_OK()
 
   def execute( self ):
     optionList = self.workflow.creatCode()
@@ -120,7 +151,7 @@ class Job:
           else:
             optionTempDirectory = p.value + '/'
       if not optionDirectory:
-        optionDirectory = self.tempDirectory + 'workflowTemp/' + str( self.jobNum ) + '/' + stepName + '/'
+        optionDirectory = self.tempDirectory + 'workflowTemp/' + str( self.jobID ) + '/' + stepName + '/'
       for optionFile in v:
         os.chdir( optionDirectory )
         os.system( 'boss.exe %s' % optionFile )
@@ -128,7 +159,7 @@ class Job:
   def submit( self ):
     optionList = self.workflow.creatCode()
     self.workflow.submit( optionList[0] )
-    statusDict = { self.jobNum : { 0 : { 'onGoing' : 'yes' } } }
+    statusDict = { self.jobID : { 0 : { 'onGoing' : 'yes' } } }
     self.dbTool.updateStep( statusDict )
 
   def generate( self ):

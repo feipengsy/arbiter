@@ -8,12 +8,12 @@ if sys.argv[1] == 'h' or sys.argv[1] == 'H' or sys.argv[1] == '-h' or sys.argv[1
   sys.exit(0)
 
 MDC = system()
-jobNum = str( sys.argv[1] )
-stepNum = str( sys.argv[2] )
-statusDict = MDC.checkStatus( jobNum )
+jobID = str( sys.argv[1] )
+stepID = str( sys.argv[2] )
+statusDict = MDC.checkStatus( jobID )
 optionList = []
-for k,v in statusDict[int(stepNum)].items():
+for k,v in statusDict[int(stepID)].items():
   if v == 'failed':
     optionList.append(k)
-MDC.resubmit( { 'jobNum': jobNum, 'stepNum': stepNum, 'optionList': optionList } )
+MDC.resubmit( { 'jobID': jobID, 'stepID': stepID, 'optionList': optionList } )
 

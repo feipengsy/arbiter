@@ -8,9 +8,9 @@ if sys.argv[1] == 'h' or sys.argv[1] == 'H' or sys.argv[1] == '-h' or sys.argv[1
   sys.exit(0)
 
 MDC = system()
-jobNum = str( sys.argv[1] )
-stepNum = str( sys.argv[2] )
+jobID = str( sys.argv[1] )
+stepID = str( sys.argv[2] )
 optionList = []
 for jobOption in sys.argv[3:]:
   optionList.append(jobOption) 
-MDC.resubmit( { 'jobNum': jobNum, 'stepNum': stepNum, 'optionList': optionList } )
+MDC.resubmit( { 'jobID': jobID, 'stepID': stepID, 'optionList': optionList } )

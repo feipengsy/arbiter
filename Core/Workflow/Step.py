@@ -2,6 +2,7 @@ import os
 import shutil
 from arbiter.Core.Workflow.Utilities.Parameter import *
 from arbiter.Core.Utilities.ResolveInputs import *
+from arbiter.Core.Utilities.ReturnValues import *
 from arbiter.Core.Workflow.Utilities.jobOptions_rec import *
 from arbiter.Core.Workflow.Utilities.jobOptions_rec_data import *
 from arbiter.Core.Workflow.Utilities.other import *
@@ -18,37 +19,37 @@ class Step:
     self.type = None
     self.name = None
     self.userName = None
-    self.stepNum = 0
-    self.jobNum = None
+    self.stepID = 0
+    self.jobID = None
     self.tempDirectory = tempDirectory
     self.inputData = []
     self.splitter = None
     self.typeDict = { 'SimulationRec' : 'jobOptionsRec', 'RealDataRec' : 'jobOptionsRecData', 'other' : 'other' }
     self.splitterDict = { 'dataSplitter' : 'dataSplitter', 'numberSplitter': 'numberSplitter' }
 
-  def creatStep( self ):
-    stepDir = self.tempDirectory + 'workflowTemp/' + str( self.jobNum ) + '/'
+  def createStep( self ):
+    stepDir = self.tempDirectory + 'workflowTemp/' + str( self.jobID ) + '/'
     os.chdir( stepDir )
     try:
       os.mkdir( self.name )
     except:
-      pass
-    return True
+      return S_ERROR( 'can not create step' )
+    return S_OK()
 
   def setType( self, stepType ):
     self.type = stepType
 
   def setName( self ):
-    self.name = self.type + 'step' + str( self.stepNum )
+    self.name = self.type + 'step' + str( self.stepID )
 
   def setUserName( self, stepUserName ):
     self.userName = stepUserName
 
-  def setStepNum( self, num ):
-    self.stepNum = num
+  def setStepID( self, ID ):
+    self.stepID = ID
 
-  def setJobNum( self, num ):
-    self.jobNum = num
+  def setJobID( self, Id ):
+    self.jobId = ID
 
   def setInputData( self ):
     for parameter in self.parameters:
@@ -77,9 +78,9 @@ class Step:
           else:
             optionTempDirectory = p.value + '/'
       if not optionTempDirectory:
-        optionTempDirectory = self.tempDirectory + 'workflowTemp/' + str(self.jobNum) + '/' + self.name + '/'
+        optionTempDirectory = self.tempDirectory + 'workflowTemp/' + str(self.jobID) + '/' + self.name + '/'
       if self.splitter == None:
-        optionListFile = open( self.tempDirectory + 'workflowTemp/' + str(self.jobNum) + '/' + self.name + '/' + 'optionList.txt', 'w' )
+        optionListFile = open( self.tempDirectory + 'workflowTemp/' + str(self.jobID) + '/' + self.name + '/' + 'optionList.txt', 'w' )
         generaterName = self.typeDict[ self.type ]
         generater = globals()[ generaterName ]( self.parameters )
         optionFileName = optionTempDirectory + self.name + '.txt'
@@ -88,7 +89,7 @@ class Step:
         optionListFile.close()
         return [optionFileName]
       else:
-        optionListFile = open( self.tempDirectory + 'workflowTemp/' + str(self.jobNum) + '/' + self.name + '/' + 'optionList.txt', 'w' )
+        optionListFile = open( self.tempDirectory + 'workflowTemp/' + str(self.jobID) + '/' + self.name + '/' + 'optionList.txt', 'w' )
         subjobs = self.splitter.split( self )
         optionFileList = []
         for subjob in subjobs:
@@ -98,13 +99,13 @@ class Step:
           generater.toTXTFile( optionFileName )
           optionListFile.write( optionFileName + '\n' )
           optionFileList.append( optionFileName )
-        print 'option files for workflow ' + str(self.jobNum) + ' ' + self.name + ' are generated in ' + optionTempDirectory
+        print 'option files for workflow ' + str(self.jobID) + ' ' + self.name + ' are generated in ' + optionTempDirectory
         optionListFile.close()
         return optionFileList
 
   def checkIfGenerated( self ):
     try:
-      listFileName = self.tempDirectory + 'workflowTemp/' + str( self.jobNum ) + '/' + self.name + '/optionList.txt'
+      listFileName = self.tempDirectory + 'workflowTemp/' + str( self.jobID ) + '/' + self.name + '/optionList.txt'
       f = open( listFileName, 'r' )
     except IOError:
       return False

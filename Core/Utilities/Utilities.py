@@ -20,14 +20,14 @@ def readend( testfile ):
 
 def loadJobFromXML( job, xmlFile ):
   xml = minidom.parse( xmlFile ).firstChild
-  job.jobNum = int( xml.attributes['jobNum'].value.encode() )
+  job.jobID = int( xml.attributes['jobID'].value.encode() )
   job.name = xml.attributes['jobName'].value.encode()
   job.user = xml.attributes['user'].value.encode()
   for snode in xml.childNodes:
     if snode.nodeName == 'step':
       stepType = snode.attributes['type'].value.encode()
       stepUserName = snode.attributes['userName'].value.encode()
-      job.workflow.addStep( stepType, stepUserName, job.jobNum )
+      job.workflow.addStep( stepType, stepUserName, job.jobID )
       job.stepCount += 1
       for pnode in snode.childNodes:
         if pnode.nodeName == 'parameter':
@@ -125,23 +125,23 @@ def checkWorkflowStatus( jobName ):
         return 'unDone'
   return 'done'
 
-def checkStepStatus( jobName, stepNum ):
-  jobDirectory = getJobDirectory( jobName, stepNum )
+def checkStepStatus( jobName, stepID ):
+  jobDirectory = getJobDirectory( jobName, stepID )
   if not os.path.exists( jobDirectory + 'optionList.txt' ):
     return 'unDone'
   result = checkStatus( jobName )
-  for stat in result[int( stepNum )].values():
+  for stat in result[int( stepID )].values():
     if stat != 'done':
       return 'unDone'
   return 'done'
 
-def getJobDirectory( jobNum, stepNum ):
+def getJobDirectory( jobID, stepID ):
   global tempDirectory
   try:
-    numName = int( jobNum )
-    jobDirectory = tempDirectory + 'workflowTemp/' + str( numName ) + '/'
+    IDName = int( jobID )
+    jobDirectory = tempDirectory + 'workflowTemp/' + str( IDName ) + '/'
     stepDirectory = os.listdir(jobDirectory)
-    finalDirectory = jobDirectory + stepDirectory[int( stepNum )] + '/'
+    finalDirectory = jobDirectory + stepDirectory[int( stepID )] + '/'
     return finalDirectory
   except ValueError:
     return False

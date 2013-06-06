@@ -24,7 +24,7 @@ lis = []
 for job in jobList:
   lis.append(job[0])
 lis.sort()
-for num in lis:
+for ID in lis:
   for job in jobList:
-    if job[0] == num:
+    if job[0] == ID:
       print str(job[0]) + '   ' + str(job[1]) + '   ' + str(job[2]) + '   ' + str(job[3]) + '   ' 

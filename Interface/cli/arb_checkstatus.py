@@ -26,18 +26,18 @@ class arb_checkstatus(baseScript):
     # user must specify the workflow ID.
       print self.__doc__
       return False
-    wsNum = result['unbound']
+    wsID = result['unbound']
     stepID = ''
     workflowID = ''
-    if len( wsNum ) == 2:
+    if len( wsID ) == 2:
     # this means that user specified the step ID.
       try:
-        stepID = int( wsNum[1] )
+        stepID = int( wsID[1] )
       except ValueError:
         print 'stepID must be a number'
         return False
     try:
-      workflowID = int( wsNum[0] )
+      workflowID = int( wsID[0] )
     except ValueError:
       print 'workflowID must be a number'
       return False

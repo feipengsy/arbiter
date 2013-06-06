@@ -10,21 +10,21 @@ class Workflow:
     self.steps = stepsPool()
     self.tempDirectory = tempDirectory
     self.parameters = ParametersCollection()
-    self.stepNum = 0
-    self.jobNum = 0
+    self.currentStepID = 0
+    self.jobID = 0
     self.user = ''
     self.jobName = ''
     self.typeList = [ 'SimulationRec', 'RealDataRec', 'other' ]
 
-  def addStep( self, stepType, stepName, jobNum ):
+  def addStep( self, stepType, stepName, jobID ):
     step = Step()
     step.setType( stepType )
     step.setUserName( stepName )
-    step.setStepNum( self.stepNum )
-    step.setJobNum( jobNum )
+    step.setStepID( self.currentStepID )
+    step.setJobID( jobID )
     step.setName()
-    step.creatStep()
-    self.stepNum += 1
+    #step.createStep()
+    self.currentStepID += 1
     self.steps.append( step )
 
   def creatCode( self ):
@@ -58,7 +58,7 @@ class Workflow:
     return True
 
   def toXML( self ):
-    ret = '<workflow jobNum="' + str( self.jobNum ) + '" jobName="' + self.jobName + '" user="' + self.user + '">\n'
+    ret = '<workflow jobID="' + str( self.jobID ) + '" jobName="' + self.jobName + '" user="' + self.user + '">\n'
     ret = ret + self.parameters.toXML()
     ret = ret + self.steps.toXML()
     ret = ret + '</workflow>'

@@ -35,29 +35,29 @@ class system:
     jobList = self.dbTool.getJobList( user )
     return S_OK( jobList )
 
-  def generate( self, jobNum ):
+  def generate( self, jobID ):
     """
       Generate option files of all steps
     """
-    xmlPath = self.tempDirectory + str( jobNum ) + '.xml'
+    xmlPath = self.tempDirectory + str( jobID ) + '.xml'
     job = Job( '', xmlPath )
     job.generate()
     return S_OK()
 
-  def execute( self, jobNum ):
+  def execute( self, jobID ):
     """
      Execute the first step of the workflow locally
     """
-    xmlPath = self.tempDirectory + str( jobNum ) + '.xml'
+    xmlPath = self.tempDirectory + str( jobID ) + '.xml'
     job = Job( '', xmlPath )
     job.execute()
     return S_OK()
 
-  def submit( self, jobNum ):
+  def submit( self, jobID ):
     """
      Submit the first step of the workflow to the queue
     """
-    xmlPath = self.tempDirectory + str( jobNum ) + '.xml'
+    xmlPath = self.tempDirectory + str( jobID ) + '.xml'
     job = Job( '', xmlPath )
     job.submit()
     return S_OK()
@@ -65,12 +65,12 @@ class system:
   def resubmit( self, infoDict ):
     """
      Re-submit sub-jobs of a workflow
-     infoDict{'jobNum':workflowID, 'stepNum':stepID, 'optionList':[optionNames...]}
+     infoDict{'jobID':workflowID, 'stepID':stepID, 'optionList':[optionNames...]}
     """
-    jobNum = infoDict['jobNum']
-    tempJob = Job( '', self.tempDirectory + str( jobNum ) + '.xml' )
-    stepNum = infoDict['stepNum']
-    opstep = tempJob.workflow.steps[int(stepNum)]
+    jobID = infoDict['jobID']
+    tempJob = Job( '', self.tempDirectory + str( jobID ) + '.xml' )
+    stepID = infoDict['stepID']
+    opstep = tempJob.workflow.steps[int(stepID)]
     stepName = opstep.name
     optionTempDirectory = ''
     for p in opstep.parameters:
@@ -80,7 +80,7 @@ class system:
         else:
           optionTempDirectory = p.value + '/'
     if not optionTempDirectory:
-      optionDirectory = self.tempDirectory + 'workflowTemp/' + str( tempJob.jobNum ) + '/' + stepName + '/'
+      optionDirectory = self.tempDirectory + 'workflowTemp/' + str( tempJob.jobID ) + '/' + stepName + '/'
     else:
       optionDirectory = optionTempDirectory
     for optionFile in infoDict['optionList']:
