@@ -27,10 +27,10 @@ class Workflow:
     self.currentStepID += 1
     self.steps.append( step )
 
-  def creatCode( self ):
+  def createCode( self, debug = False ):
     resultList = []
     for step in self.steps:
-      result = step.creatCode()
+      result = step.createCode( debug )
       resultList.append( result )
     # Be careful here!
     return resultList

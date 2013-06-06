@@ -65,7 +65,7 @@ class Step:
       return S_ERROR( 'No splitter named %s' % splitterInfo[ 'name' ] )
     self.splitter = globals()[ splitterInfo[ 'name' ] ]( splitterInfo )
 
-  def creatCode( self ):
+  def createCode( self, debug = False ):
     generated = self.checkIfGenerated()
     if generated:
       return generated
@@ -80,16 +80,18 @@ class Step:
       if not optionTempDirectory:
         optionTempDirectory = self.tempDirectory + 'workflowTemp/' + str(self.jobID) + '/' + self.name + '/'
       if self.splitter == None:
-        optionListFile = open( self.tempDirectory + 'workflowTemp/' + str(self.jobID) + '/' + self.name + '/' + 'optionList.txt', 'w' )
         generaterName = self.typeDict[ self.type ]
         generater = globals()[ generaterName ]( self.parameters )
         optionFileName = optionTempDirectory + self.name + '.txt'
         generater.toTXTFile( optionFileName )
-        optionListFile.write( optionFileName + '\n' )
-        optionListFile.close()
+        if not debug:
+          optionListFile = open( self.tempDirectory + 'workflowTemp/' + str(self.jobID) + '/' + self.name + '/' + 'optionList.txt', 'w' )
+          optionListFile.write( optionFileName + '\n' )
+          optionListFile.close()
         return [optionFileName]
       else:
-        optionListFile = open( self.tempDirectory + 'workflowTemp/' + str(self.jobID) + '/' + self.name + '/' + 'optionList.txt', 'w' )
+        if not debug:
+          optionListFile = open( self.tempDirectory + 'workflowTemp/' + str(self.jobID) + '/' + self.name + '/' + 'optionList.txt', 'w' )
         subjobs = self.splitter.split( self )
         optionFileList = []
         for subjob in subjobs:
@@ -97,10 +99,12 @@ class Step:
           generater = globals()[ generaterName ]( subjob.parameters )
           optionFileName = optionTempDirectory + subjob.name + '.txt'
           generater.toTXTFile( optionFileName )
-          optionListFile.write( optionFileName + '\n' )
+          if not debug:
+            optionListFile.write( optionFileName + '\n' )
           optionFileList.append( optionFileName )
         print 'option files for workflow ' + str(self.jobID) + ' ' + self.name + ' are generated in ' + optionTempDirectory
-        optionListFile.close()
+        if not debug:
+          optionListFile.close()
         return optionFileList
 
   def checkIfGenerated( self ):

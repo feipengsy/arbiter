@@ -136,7 +136,7 @@ class Job:
     return S_OK()
 
   def execute( self ):
-    optionList = self.workflow.creatCode()
+    optionList = self.workflow.createCode()
     self.workflow.execute( optionList[0] )
 
   def reexecute( self, infoDict ):
@@ -157,10 +157,10 @@ class Job:
         os.system( 'boss.exe %s' % optionFile )
 
   def submit( self ):
-    optionList = self.workflow.creatCode()
+    optionList = self.workflow.createCode()
     self.workflow.submit( optionList[0] )
     statusDict = { self.jobID : { 0 : { 'onGoing' : 'yes' } } }
     self.dbTool.updateStep( statusDict )
 
   def generate( self ):
-    optionList = self.workflow.creatCode()
+    optionList = self.workflow.createCode( self.debug )
