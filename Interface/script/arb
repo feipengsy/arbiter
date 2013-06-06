@@ -4,7 +4,7 @@ import sys
 
 errorMessage = ''
 argv = sys.argv
-if not argv:
+if len( argv ) < 2:
   print errorMessage
   sys.exit(0)
 command = 'arb_' + argv[1]
