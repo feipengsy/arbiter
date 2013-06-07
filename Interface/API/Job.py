@@ -22,7 +22,7 @@ class Job:
     self.dbTool = dbTool()
     if script:
       self.__loadJob( script )
-      checkUserName( self.user )
+      if not checkUserName( self.user )
     else:
       if name:
         self.setName( name )
@@ -118,10 +118,11 @@ class Job:
       try:
         os.mkdir( jobDirectory )
       except:
-        return S_ERROR( 'Can not create workflow.\nCreating workflow failed' )
+        return S_ERROR( 'Can not create workflow.\nFail to Create workflow' )
     result = self.dbTool.addJob( self )
     if not result['OK']:
       print 'Fail to create workflow'
+      return result
 
     # create directory for steps and add step info to the database
     for step in self.workflow.steps:

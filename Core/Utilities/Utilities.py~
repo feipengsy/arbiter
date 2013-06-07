@@ -155,5 +155,6 @@ def checkUserName( user ):
   userName = os.popen('echo $USER').read()
   userName = user.strip()
   if user != userName:
-    return False
+    print 'user not matched!'
+    sys.exit()
   return True
