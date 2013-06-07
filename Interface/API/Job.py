@@ -21,7 +21,7 @@ class Job:
     self.workflow = Workflow()
     self.dbTool = dbTool()
     if script:
-      self.loadJob( script )
+      self.__loadJob( script )
       checkUserName( self.user )
     else:
       if name:
@@ -47,7 +47,7 @@ class Job:
       self.workflow.user = self.user
       #self.dbTool.addJob( self )
 
-  def loadJob( self, script ):
+  def __loadJob( self, script ):
     result = loadJobFromXML( self, script )
     return result
 
