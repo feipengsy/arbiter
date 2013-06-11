@@ -23,10 +23,29 @@ class dbTool:
     try:
       cur.execute( 'INSERT INTO WORKFLOW VALUES(%s,%s,%s,%s,%s)', param )
     except:
+      cur.close()
+      conn.close()
       return S_ERROR( 'Error when adding workflow to database' )
     cur.close()
     conn.close()
     return S_OK()
+
+  def deleteJob( self, jobID ):
+    result = self.connect()
+    if not result['OK']:
+      return result
+    conn = result['Value']
+    cur = conn.cursor()
+    try:
+      cur.execute( 'delete from WORKFLOW where workflowNum=%s' % jobID )
+      cur.execute( 'delete from STEP where workflowNum=%s' % jobID )
+    except:
+      cur.close()
+      conn.close()
+      return S_ERROR( 'Error when deleting workflow from database' )
+    cur.close()
+    conn.close()
+    return S_OK
 
   def checkExistence( self, job ):
     result = self.connect()
@@ -37,6 +56,8 @@ class dbTool:
     try:
       cur.execute( 'select * from WORKFLOW where workflowNum=%s' % job.jobID )
     except:
+      cur.close()
+      conn.close()
       return S_ERROR( 'Error when querying database' )
     result = cur.fetchall()
     if not result:
@@ -45,10 +66,16 @@ class dbTool:
       try:
         cur.execute( 'select * from STEP where workflowNum=%s and stepNum=%s ' % ( job.jobID, step.stepID) )
       except:
+        cur.close()
+        conn.close()
         return S_ERROR( 'Error when querying database' )
       result = cur.fetchall()
       if not result:
+        cur.close()
+        conn.close()
         return S_ERROR( 'Can not find step information in database' )
+    cur.close()
+    conn.close()
     return S_OK( '' )
   
 
@@ -61,6 +88,8 @@ class dbTool:
     try:
       cur.execute('SELECT * FROM WORKFLOW WHERE user="%s"' % user)
     except:
+      cur.close()
+      conn.close()
       return S_ERROR( 'Error when querying database' )
     jobList = cur.fetchall()
     cur.close()
@@ -77,6 +106,8 @@ class dbTool:
     try:
       cur.execute( 'INSERT INTO STEP VALUES(%s,%s,%s,%s)', param )
     except:
+      cur.close()
+      conn.close()
       return S_ERROR( 'Error when adding step to database' )
     cur.close()
     conn.close()
@@ -91,6 +122,8 @@ class dbTool:
     try:
       cur.execute('SELECT workflowNum FROM WORKFLOW')
     except:
+      cur.close()
+      conn.close()
       return S_ERROR( 'Error when querying database' )
     ID = int( max( cur.fetchall() )[0] ) + 1
     cur.close()
@@ -106,6 +139,8 @@ class dbTool:
     try:
       cur.execute('SELECT stepCount FROM WORKFLOW WHERE workflowNum=%s', jobID )
     except:
+      cur.close()
+      conn.close()
       return S_ERROR( 'Error when querying database' )
     result = int( cur.fetchone()[0] )
     cur.close()
@@ -126,12 +161,16 @@ class dbTool:
         try:
           cur.execute( "UPDATE WORKFLOW SET status=%s WHERE workflowNum='%s'", param )
         except:
+          cur.close()
+          conn.close()
           return S_ERROR( 'Error when updating workflow in database' )
       if k == 'stepCount':
         param = ( v, jobID )
         try:
           cur.execute( "UPDATE WORKFLOW SET stepCount=%s WHERE workflowNum='%s'", param )       
         except:
+          cur.close()
+          conn.close()
           return S_ERROR( 'Error when updating workflow in database' )
     cur.close()
     conn.close()
@@ -151,12 +190,16 @@ class dbTool:
             try:
               cur.execute( "UPDATE STEP SET status=%s WHERE stepNum='%s' AND workflowNum='%s'", param )
             except:
+              cur.close()
+              conn.close()
               return S_ERROR( 'Error when updating step in database' )
           if name == 'onGoing':
             param = ( value, stepID, jobID )
             try:
               cur.execute( "UPDATE STEP SET onGoing=%s WHERE stepNum='%s' AND workflowNum='%s'", param )
             except:
+              cur.close()
+              conn.close()
               return S_ERROR( 'Error when updating step in database' )
     cur.close()
     conn.close()
