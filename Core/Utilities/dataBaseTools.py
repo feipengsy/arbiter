@@ -8,7 +8,7 @@ class dbTool:
 
   def connect( self ):
     try:
-      conn = MySQLdb.connect(host="DBHOSTNAME",user="DBUSER",passwd="DBPASSWORD",db="arbiterDB")
+      conn = MySQLdb.connect(host="localhost",user="arbuser",passwd="123456",db="arbiterDB")
     except:
       return S_ERROR( 'Can not connect to the database' )
     return S_OK( conn )

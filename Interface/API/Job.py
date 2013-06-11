@@ -37,14 +37,19 @@ class Job:
       else:
         self.setName( 'unDefined' )
         self.workflow.jobName = 'unDefined'
-    self.__initializeJob()
+    result = self.__initializeJob()
+    if not result['OK']:
+      sys.exit(0)
 
   def __initializeJob( self ):
     if self.jobID != None:
     # this means job is already loaded from xml
       return S_OK()
     else:
-      newID = int( self.dbTool.getNewWorkflowID() )
+      result = self.dbTool.getNewWorkflowID()
+      if not result['OK']:
+        return result      
+      newID = int( result['Value'] )
       #dirDirectory = self.tempDirectory + 'workflowTemp/'
       #os.chdir( dirDirectory )
       #os.mkdir( newNumString )
