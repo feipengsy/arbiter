@@ -158,7 +158,7 @@ class Job:
     if not os.path.exists( jobTempDirectory ):
       return S_ERROR( 'cannot find the jobTempDirectory' )
     jobDirectory = jobTempDirectory + str( self.jobID )
-    if os.path.exsits( jobDirectory ):
+    if os.path.exists( jobDirectory ):
       return S_ERROR( '%s already exists, this is usually because someone cleaned database, please check and remove old worklfow information' % jobDirectory )
     else:
       try:
