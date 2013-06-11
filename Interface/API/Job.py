@@ -58,6 +58,7 @@ class Job:
       self.workflow.jobID = self.jobID
       self.workflow.user = self.user
       #self.dbTool.addJob( self )
+      return S_OK()
 
   def __loadJob( self, script ):
     result = loadJobFromXML( self, script )
