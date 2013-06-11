@@ -136,7 +136,7 @@ class Job:
     xmlFile = open( self.tempDirectory + str( self.jobID ) + '.xml', 'w' )
     xmlFile.write( ret )
     xmlFile.close()
-    print 'New workflow generated! The ID is : ' + self.jobID
+    print 'New workflow generated! The ID is : ' + str( self.jobID )
  
   def updateDB( self ):
     for stepID in range( self.stepCount ):

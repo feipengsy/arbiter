@@ -49,7 +49,7 @@ class Step:
     self.stepID = ID
 
   def setJobID( self, ID ):
-    self.jobId = ID
+    self.jobID = ID
 
   def setInputData( self ):
     for parameter in self.parameters:
