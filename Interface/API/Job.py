@@ -182,6 +182,21 @@ class Job:
         return result
     return S_OK()
 
+  def delete( self ):
+    # remove the directory of the workflwo
+    jobDirectory = self.tempDirectory + 'workflowTemp/' + str( self.jobID )
+    if os.path.exists( jobDirectory ):
+      try:
+        os.system( 'rm -rf %s' % jobDirectory )
+      except:
+        return S_ERROR( 'Can not remove job directory' )
+    # remove information from the database
+    result = self.dbTool.deleteJob( self.jobID )
+    if not result['OK']:
+      return result
+    return S_OK()
+    
+
   def execute( self ):
     optionList = self.workflow.createCode()
     self.workflow.execute( optionList[0] )
