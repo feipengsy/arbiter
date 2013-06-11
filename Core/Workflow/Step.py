@@ -48,7 +48,7 @@ class Step:
   def setStepID( self, ID ):
     self.stepID = ID
 
-  def setJobID( self, Id ):
+  def setJobID( self, ID ):
     self.jobId = ID
 
   def setInputData( self ):
