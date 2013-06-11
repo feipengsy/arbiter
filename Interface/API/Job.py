@@ -26,6 +26,9 @@ class Job:
       result = self.__checkExistence()
       if not result['OK']:
         sys.exit(0)
+      result = self.updateDB()
+      if not result['OK']:
+        sys.exit(0)
       #checkUserName( self.user )
     else:
       if name:
@@ -71,8 +74,10 @@ class Job:
     result = self.dbTool.checkExistence( self )
     if not result['OK']:
       return result
-  
-    
+    result = checkUserName( self.user )
+    if not result:
+      return S_ERROR( 'User name not matched' )
+    return S_OK()
 
   def setName( self, jobName ):
     if not type( jobName ) == type( ' ' ):
@@ -118,19 +123,28 @@ class Job:
     if not result['OK']:
       return result
     ret = self.workflow.toXML()
+    xmlFileName = self.tempDirectory + str( self.jobID ) + '.xml'
+    if os.path.exists( xmlFileName ):
+      print 'xmlFile already exists, this is usually because someone cleaned database, please check and remove old worklfow information'
+      sys.exit(0)
     xmlFile = open( self.tempDirectory + str( self.jobID ) + '.xml', 'w' )
     xmlFile.write( ret )
     xmlFile.close()
-    print self.jobID
+    print 'New workflow generated! The ID is : ' + self.jobID
  
   def updateDB( self ):
     for stepID in range( self.stepCount ):
       stepStatus = checkStepStatus( self.jobID, stepID )
       statusDict = { self.jobID : { stepID: { 'status' : stepStatus } } }
-      self.dbTool.updateStep( statusDict )
+      result = self.dbTool.updateStep( statusDict )
+      if not result['OK']:
+        return result
     workflowStatus = checkWorkflowStatus( self.jobID )
     workflowInfo = { 'jobID' : self.jobID, 'status' : workflowStatus }
-    self.dbTool.updateWorkflow( workflowInfo )
+    result = self.dbTool.updateWorkflow( workflowInfo )
+    if not result['OK']:
+      return result
+    return S_OK()
 
   def create( self ):
     # create the directory for the whole workflow and add workflow info to the database
@@ -139,15 +153,15 @@ class Job:
       return S_ERROR( 'cannot find the jobTempDirectory' )
     jobDirectory = jobTempDirectory + str( self.jobID )
     if os.path.exsits( jobDirectory ):
-      print 'WARNING:%s already exists, this may because you already called job.create(), here we just overwrite' % jobDirectory
+      return S_ERROR( '%s already exists, this is usually because someone cleaned database, please check and remove old worklfow information' % jobDirectory )
     else:
       try:
         os.mkdir( jobDirectory )
       except:
-        return S_ERROR( 'Can not create workflow.\nFail to Create workflow' )
+        return S_ERROR( 'Can not create workflow.\nFailed to Create workflow' )
     result = self.dbTool.addJob( self )
     if not result['OK']:
-      print 'Fail to create workflow'
+      print 'Failed to create workflow'
       return result
 
     # create directory for steps and add step info to the database
