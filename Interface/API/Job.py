@@ -1,4 +1,5 @@
 import os
+import sys
 from arbiter.Core.Workflow.Workflow import *
 from arbiter.Core.Utilities.ReturnValues import *
 from arbiter.Core.Utilities.Utilities import *
@@ -22,7 +23,10 @@ class Job:
     self.dbTool = dbTool()
     if script:
       self.__loadJob( script )
-      if not checkUserName( self.user )
+      result = self.__checkExistence()
+      if not result['OK']:
+        sys.exit(0)
+      #checkUserName( self.user )
     else:
       if name:
         self.setName( name )
@@ -30,9 +34,9 @@ class Job:
       else:
         self.setName( 'unDefined' )
         self.workflow.jobName = 'unDefined'
-    self.initializeJob()
+    self.__initializeJob()
 
-  def initializeJob( self ):
+  def __initializeJob( self ):
     if self.jobID != None:
     # this means job is already loaded from xml
       return S_OK()
@@ -50,6 +54,25 @@ class Job:
   def __loadJob( self, script ):
     result = loadJobFromXML( self, script )
     return result
+
+  def __checkExistence( self ):
+    # check existence of directory first
+    jobTempDirectory = self.tempDirectory + 'workflowTemp/'
+    if not os.path.exsits( jobTempDirectory ):
+      return S_ERROR( 'Can not find jobTempDirectory' )
+    jobDirectory = jobTempDirectory + str( self.jobID )
+    if not os.path.exists( jobDirectory ):
+      return S_ERROR( 'Can not find job directory' )
+    for step in self.workflow.steps:
+      stepDirectory = jobDirectory + step.name
+      if not os.path.exists( stepDirectory ):
+        return S_ERROR( 'Can not find step directory' )
+    # check database
+    result = self.dbTool.checkExistence( self )
+    if not result['OK']:
+      return result
+  
+    
 
   def setName( self, jobName ):
     if not type( jobName ) == type( ' ' ):
@@ -91,6 +114,9 @@ class Job:
     return S_ERROR('Can not find step named %s' % stepName )
 
   def toXMLFile( self ):
+    result = self.create()
+    if not result['OK']:
+      return result
     ret = self.workflow.toXML()
     xmlFile = open( self.tempDirectory + str( self.jobID ) + '.xml', 'w' )
     xmlFile.write( ret )

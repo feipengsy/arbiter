@@ -28,6 +28,30 @@ class dbTool:
     conn.close()
     return S_OK()
 
+def checkExistence( self, job ):
+  result = self.connect()
+  if not result['OK']:
+    return result
+  conn = result['Value']
+  cur = conn.cursor()
+  try:
+    cur.execute( 'select * from WORKFLOW where workflowNum=%s' % job.jobID )
+  except:
+    return S_ERROR( 'Error when querying database' )
+  result = cur.fetchall()
+  if not result:
+    return S_ERROR( 'Can not find job information in database' )
+  for step in job.steps:
+    try:
+      cur.execute( 'select * from STEP where workflowNum=%s and stepNum=%s ' % ( job.jobID, step.stepID) )
+    except:
+      return S_ERROR( 'Error when querying database' )
+    result = cur.fetchall()
+    if not result:
+      return S_ERROR( 'Can not find step information in database' )
+  return S_OK( '' )
+  
+
   def getJobList( self, user ):
     result = self.connect()
     if not result['OK']:
