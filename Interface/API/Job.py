@@ -168,6 +168,7 @@ class Job:
     result = self.dbTool.addJob( self )
     if not result['OK']:
       print 'Failed to create workflow'
+      self.delete()
       return result
 
     # create directory for steps and add step info to the database
@@ -175,15 +176,21 @@ class Job:
       result = step.createStep()
       if not result['OK']:
         print 'Fail to create workflow'
+        self.delete()
         return result
       result = self.dbTool.addStep( step )
       if not result['OK']:
         print 'Fail to create workflow'
+        self.delete()
         return result
     return S_OK()
 
   def delete( self ):
-    # remove the directory of the workflwo
+    # check if user name matched
+    result = checkUserName( self.user )
+    if not result:
+      return S_ERROR( 'Can not remove workflow belong to others' )
+    # remove the directory of the workflow
     jobDirectory = self.tempDirectory + 'workflowTemp/' + str( self.jobID )
     if os.path.exists( jobDirectory ):
       try:

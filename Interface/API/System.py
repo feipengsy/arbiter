@@ -44,6 +44,27 @@ class system:
     job.generate()
     return S_OK()
 
+  def delete( self, jobID ):
+    """
+      Delete workflow
+    """
+    result = checkUserName( self.user )
+    if not result:
+      return S_ERROR( 'Can not remove workflow belong to others' )
+    # remove the directory of the workflow
+    jobDirectory = self.tempDirectory + 'workflowTemp/' + str( jobID )
+    if os.path.exists( jobDirectory ):
+      try:
+        os.system( 'rm -rf %s' % jobDirectory )
+      except:
+        return S_ERROR( 'Can not remove job directory' )
+    # remove information from the database
+    result = self.dbTool.deleteJob( jobID )
+    if not result['OK']:
+      return result
+    return S_OK()
+    
+
   def execute( self, jobID ):
     """
      Execute the first step of the workflow locally
