@@ -64,21 +64,25 @@ class Step:
     if splitterInfo[ 'name' ] not in self.splitterDict.keys():
       return S_ERROR( 'No splitter named %s' % splitterInfo[ 'name' ] )
     self.splitter = globals()[ splitterInfo[ 'name' ] ]( splitterInfo )
+    
+  def getOptionFileDirectory( self ):
+    optionTempDirectory = ''
+    for p in self.parameters:
+      if p.name == 'optionFileDirectory':
+        if p.value[-1] == '/':
+          optionTempDirectory = p.value
+        else:
+          optionTempDirectory = p.value + '/'
+    if not optionTempDirectory:
+      optionTempDirectory = self.tempDirectory + 'workflowTemp/' + str(self.jobID) + '/' + self.name + '/'
+    return optionTempDirectory
 
   def createCode( self, debug = False ):
     generated = self.checkIfGenerated()
     if generated:
       return generated
     else:
-      optionTempDirectory = ''
-      for p in self.parameters:
-        if p.name == 'optionFileDirectory':
-          if p.value[-1] == '/':
-            optionTempDirectory = p.value
-          else:
-            optionTempDirectory = p.value + '/'
-      if not optionTempDirectory:
-        optionTempDirectory = self.tempDirectory + 'workflowTemp/' + str(self.jobID) + '/' + self.name + '/'
+      optionTempDirectory = self.getOptionFileDirectory()
       if self.splitter == None:
         generaterName = self.typeDict[ self.type ]
         generater = globals()[ generaterName ]( self.parameters )

@@ -102,9 +102,9 @@ class dbTool:
       return result
     conn = result['Value']
     cur = conn.cursor()
-    param = ( step.jobID, step.stepID, 'unDone', 'no' )
+    param = ( step.jobID, step.stepID, 'unDone', 'no', step.getOptionFileDirectory )
     try:
-      cur.execute( 'INSERT INTO STEP VALUES(%s,%s,%s,%s)', param )
+      cur.execute( 'INSERT INTO STEP VALUES(%s,%s,%s,%s,%s)', param )
     except:
       cur.close()
       conn.close()
