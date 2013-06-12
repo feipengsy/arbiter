@@ -125,6 +125,9 @@ class Job:
     return S_ERROR('Can not find step named %s' % stepName )
 
   def toXMLFile( self ):
+    if self.debug:
+      print 'debug mode detected!Will not generate xml file'
+      return True
     result = self.create()
     if not result['OK']:
       return result
@@ -212,7 +215,7 @@ class Job:
 
   def execute( self ):
     optionList = self.workflow.createCode()
-    self.workflow.execute( optionList[0] )
+    self.workflow.execute( optionList )
 
   def reexecute( self, infoDict ):
     for k,v in infoDict.items():
@@ -233,7 +236,7 @@ class Job:
 
   def submit( self ):
     optionList = self.workflow.createCode()
-    self.workflow.submit( optionList[0] )
+    self.workflow.submit( optionList )
     statusDict = { self.jobID : { 0 : { 'onGoing' : 'yes' } } }
     self.dbTool.updateStep( statusDict )
 

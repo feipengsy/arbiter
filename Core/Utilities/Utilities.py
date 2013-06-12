@@ -44,17 +44,26 @@ def loadJobFromXML( job, xmlFile ):
   job.updateDB()
   return True
 
-def checkStatus( jobName ):
+def checkStatus( workflowID ):
   databaseTool = dbTool()
-  stepCount = databaseTool.getStepCount( int( jobName ) )
+  result = databaseTool.getStepCount( int( workflowID ) )
+  if not result['OK']:
+    return result
+  stepCount = result['Value']
   allStatDict = {}
   for i in range( stepCount ):
-    jobDirectory = getJobDirectory( jobName, i )
+    result = getJobDirectory( workflowID, i )
+    if not result['OK']:
+      return result
+    jobDirectory = result['Value'] 
     optionLogDict = {}
     optionfiles = []
     statDict = {}
     statTempDict = {}
     nameDirectDict = {}
+    if not os.path.exists( jobDirectory + 'optionList.txt' ):
+      allStatDict[i] = {}
+      continue
     optionListFile = open( jobDirectory + 'optionList.txt' )
     optionFileTemp = optionListFile.readlines()
     optionListFile.close()
@@ -67,7 +76,8 @@ def checkStatus( jobName ):
       logfile = optionfile + '.bosslog'
       optionLogDict[optionfile] = logfile
     #mind! Add user information here
-    cmdReturn = os.popen( 'qstat -u lit' ).readlines()
+    user = getUserName()
+    cmdReturn = os.popen( 'qstat -u %s' % user ).readlines()
     if len( cmdReturn ) >= 6:
       for returnLine in cmdReturn[5:]:
         pat = re.compile( '\S{1,255}\s{1,255}\S{1,255}\s{1,255}\S{1,255}\s{1,255}(\S{1,255})' )
@@ -107,44 +117,55 @@ def checkStatus( jobName ):
         if not statDict[jobName]:
           statDict[jobName] = 'failed'
     allStatDict[i] = statDict
-  return allStatDict
+  return S_OK( allStatDict )
 
-def checkWorkflowStatus( jobName ):
+def checkWorkflowStatus( workflowID ):
   databaseTool = dbTool()
-  stepCount = databaseTool.getStepCount( int( jobName ) )
-  for i in range( stepCount ):
-    jobDirectory = getJobDirectory( jobName, i )
-    if not os.path.exists( jobDirectory + 'optionList.txt' ):
-      return 'unDone'
-  result = checkStatus( jobName )
-  for stepStatDict in result.values():
-    if not stepStatDict:
-      return 'unDone'
-    for stat in stepStatDict.values():
-      if stat != 'done':
-        return 'unDone'
-  return 'done'
-
-def checkStepStatus( jobName, stepID ):
-  jobDirectory = getJobDirectory( jobName, stepID )
+  result = databaseTool.getStepCount( int( workflowID ) )
+  if not result['OK']:
+    return result
+  stepCount = result['Value']
+  jobDirectory = getJobDirectory( workflowID, 0 )
   if not os.path.exists( jobDirectory + 'optionList.txt' ):
-    return 'unDone'
-  result = checkStatus( jobName )
-  for stat in result[int( stepID )].values():
-    if stat != 'done':
-      return 'unDone'
-  return 'done'
+    return S_OK( 'unSubmitted' )
+  result = checkStatus( worklowID )
+  if not result['OK']:
+    return result
+  for stepStatDict in result['Value'].values():
+    if not stepStatDict:
+      return S_OK( 'running' )
+    for stat in stepStatDict.values():
+      if stat == 'failed':
+        return S_OK( 'failed' )
+      if stat != 'done':
+        return S_OK( 'running' )
+  return S_OK( 'done' )
 
-def getJobDirectory( jobID, stepID ):
+def checkStepStatus( workflowID, stepID ):
+  jobDirectory = getJobDirectory( workflowID, stepID )
+  if not os.path.exists( jobDirectory + 'optionList.txt' ):
+    return S_OK( 'unSubmitted' )
+  result = checkStatus( workflowID )
+  if not result['OK']:
+    return result
+  for stat in result['Value'][int( stepID )].values():
+    if stat == 'failed':
+      return S_OK( 'failed' )
+    if stat != 'done':
+      return S_OK( 'running' )
+  return S_OK( 'done' )
+
+def getJobDirectory( workflowID, stepID ):
   global tempDirectory
-  try:
-    IDName = int( jobID )
-    jobDirectory = tempDirectory + 'workflowTemp/' + str( IDName ) + '/'
-    stepDirectory = os.listdir(jobDirectory)
-    finalDirectory = jobDirectory + stepDirectory[int( stepID )] + '/'
-    return finalDirectory
-  except ValueError:
-    return False
+  IDName = int( workflowID )
+  jobDirectory = tempDirectory + 'workflowTemp/' + str( IDName ) + '/'
+  if not os.path.exists( jobDirectory ):
+    return S_ERROR( 'Can not find the workflow temp directory' )
+  stepDirectory = os.listdir(jobDirectory)
+  finalDirectory = jobDirectory + stepDirectory[int( stepID )] + '/'
+  if not os.path.exists( finalDirectory ):
+    return S_ERROR( 'Can not find the step temp directory' )
+  return S_OK( finalDirectory )
 
 def getUserName():
   user = os.popen('echo $USER').read()

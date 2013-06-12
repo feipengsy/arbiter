@@ -28,12 +28,9 @@ class Workflow:
     self.steps.append( step )
 
   def createCode( self, debug = False ):
-    resultList = []
-    for step in self.steps:
-      result = step.createCode( debug )
-      resultList.append( result )
+    result = self.steps[0].createCode( debug )
     # Be careful here!
-    return resultList
+    return result
 
   def execute( self, optionList ):
     for optionFile in optionList:
