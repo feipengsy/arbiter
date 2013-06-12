@@ -149,7 +149,10 @@ class dbTool:
       cur.close()
       conn.close()
       return S_ERROR( 'Error when querying database' )
-    ID = int( max( cur.fetchall() )[0] ) + 1
+    result = cur.fetchall()
+    if not result:
+      return S_OK(0)
+    ID = int( max( result )[0] ) + 1
     cur.close()
     conn.close()
     return S_OK( ID )
