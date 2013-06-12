@@ -29,6 +29,29 @@ class dbTool:
     cur.close()
     conn.close()
     return S_OK()
+  
+  def addSubJob( self, step, subjobName ):
+    result = self.connect()
+    if not result['OK']:
+      return result
+    conn = result['Value']
+    cur = conn.cursor()
+    param = ( step.jobID, step.stepID, subjobName )
+    try:
+      cur.execute( 'delete from JOB where workflowID=%s and stepID=%s and jobName=%s', param )     
+    except:
+      cur.close()
+      conn.close()
+      return S_ERROR( 'Error when querying database' )
+    param = ( step.jobID, step.stepID, subjobName, 'unsubmitted' )
+    try:
+      cur.execute( 'insert into JOB values(%s,%s,%s,%s)', param )     
+    except:
+      cur.close()
+      conn.close()
+      return S_ERROR( 'Error when adding subjob into database' )
+    return S_OK()
+    
 
   def deleteJob( self, jobID ):
     result = self.connect()
@@ -39,6 +62,7 @@ class dbTool:
     try:
       cur.execute( 'delete from WORKFLOW where workflowNum=%s' % jobID )
       cur.execute( 'delete from STEP where workflowNum=%s' % jobID )
+      cur.execute( 'delete from JOB where workflowID=%s' % jobID )
     except:
       cur.close()
       conn.close()

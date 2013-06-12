@@ -9,6 +9,7 @@ from arbiter.Core.Workflow.Utilities.other import *
 from arbiter.Core.Workflow.Utilities.Splitter import *
 from arbiter.Core.Workflow.Workflow import *
 from arbiter.Core.Utilities.Constants import *
+from arbiter.Core.Utilities.dataBaseTools import *
 
 class Step:
 
@@ -24,6 +25,7 @@ class Step:
     self.tempDirectory = tempDirectory
     self.inputData = []
     self.splitter = None
+    self.dbTool = dbTool()
     self.typeDict = { 'SimulationRec' : 'jobOptionsRec', 'RealDataRec' : 'jobOptionsRecData', 'other' : 'other' }
     self.splitterDict = { 'dataSplitter' : 'dataSplitter', 'numberSplitter': 'numberSplitter' }
 
@@ -92,6 +94,7 @@ class Step:
           optionListFile = open( self.tempDirectory + 'workflowTemp/' + str(self.jobID) + '/' + self.name + '/' + 'optionList.txt', 'w' )
           optionListFile.write( optionFileName + '\n' )
           optionListFile.close()
+          self.dbTool.addSubJob( self, subjob.name + '.txt' )
         return [optionFileName]
       else:
         if not debug:
@@ -105,6 +108,7 @@ class Step:
           generater.toTXTFile( optionFileName )
           if not debug:
             optionListFile.write( optionFileName + '\n' )
+            self.dbTool.addSubJob( self, subjob.name + '.txt' )
           optionFileList.append( optionFileName )
         print 'option files for workflow ' + str(self.jobID) + ' ' + self.name + ' are generated in ' + optionTempDirectory
         if not debug:
