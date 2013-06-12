@@ -191,6 +191,12 @@ class Job:
     if not result:
       return S_ERROR( 'Can not remove workflow belong to others' )
     # remove the directory of the workflow
+    xmlFile = self.tempDirectory + str( self.jobID ) + '.xml'
+    if os.path.exists( xmlFile ):
+      try:
+        os.system( 'rm %s' % xmlFile )
+      except:
+        return S_ERROR( 'Can not remove xml file' )
     jobDirectory = self.tempDirectory + 'workflowTemp/' + str( self.jobID )
     if os.path.exists( jobDirectory ):
       try:

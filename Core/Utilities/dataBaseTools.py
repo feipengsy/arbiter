@@ -69,7 +69,7 @@ class dbTool:
       return S_ERROR( 'Error when deleting workflow from database' )
     cur.close()
     conn.close()
-    return S_OK
+    return S_OK()
 
   def checkExistence( self, job ):
     result = self.connect()
@@ -126,7 +126,7 @@ class dbTool:
       return result
     conn = result['Value']
     cur = conn.cursor()
-    param = ( step.jobID, step.stepID, 'unDone', 'no', step.getOptionFileDirectory )
+    param = ( step.jobID, step.stepID, 'unDone', 'no', step.getOptionFileDirectory() )
     try:
       cur.execute( 'INSERT INTO STEP VALUES(%s,%s,%s,%s,%s)', param )
     except:
