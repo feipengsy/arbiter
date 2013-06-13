@@ -43,7 +43,10 @@ class arb_checkstatus(baseScript):
       return False
     # now get status information through API
     arbiter = system()
-    statusDict = arbiter.checkStatus( str( workflowID ) )
+    result = arbiter.checkStatus( str( workflowID ) )
+    if not result['OK']:
+      return False
+    statusDict = result['Value']
     if not stepID:
       for stepCount, stepStatusDict in statusDict.items():
         print 'step' + str( stepCount ) + 'status:'

@@ -32,7 +32,10 @@ class system:
       Get the workflow list
       returns: S_OK,S_ERROR
     """
-    jobList = self.dbTool.getJobList( user )
+    result = self.dbTool.getJobList( user )
+    if not result['OK']:
+      return result
+    jobList = result['Value']
     return S_OK( jobList )
 
   def generate( self, jobID ):
