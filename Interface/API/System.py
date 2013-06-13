@@ -95,24 +95,21 @@ class system:
      infoDict{'jobID':workflowID, 'stepID':stepID, 'optionList':[optionNames...]}
     """
     jobID = infoDict['jobID']
-    tempJob = Job( '', self.tempDirectory + str( jobID ) + '.xml' )
     stepID = infoDict['stepID']
-    opstep = tempJob.workflow.steps[int(stepID)]
-    stepName = opstep.name
-    optionTempDirectory = ''
-    for p in opstep.parameters:
-      if p.name == 'optionFileDirectory':
-        if p.value[-1] == '/':
-          optionTempDirectory = p.value
-        else:
-          optionTempDirectory = p.value + '/'
-    if not optionTempDirectory:
-      optionDirectory = self.tempDirectory + 'workflowTemp/' + str( tempJob.jobID ) + '/' + stepName + '/'
-    else:
-      optionDirectory = optionTempDirectory
-    for optionFile in infoDict['optionList']:
-      os.chdir( optionDirectory )
+    optionFileList = infoDict['optionList']
+    result = self.dbTool.getWorkarea( jobID, stepID )
+    if not result['OK']:
+      return result
+    optionTempDirectory = result['Value']
+    result = self.dbTool.checkOptionFile( optionFileList )
+    if not result['OK']:
+      return result
+    optionFileDict = result['Value']
+    for optionFile in optionFileDict['valid']:
+      os.chdir( optionTempDirectory )
       os.system( 'boss -q %s' % optionFile )
+    for optionFile in optionFileDict['invalid']:
+      print 'Invalid job name: ' + optionFile
     return S_OK()
 
   def checkStatus( self, jobName ):

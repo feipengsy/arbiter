@@ -50,8 +50,7 @@ class dbTool:
       cur.close()
       conn.close()
       return S_ERROR( 'Error when adding subjob into database' )
-    return S_OK()
-    
+    return S_OK()    
 
   def deleteJob( self, jobID ):
     result = self.connect()
@@ -100,8 +99,7 @@ class dbTool:
         return S_ERROR( 'Can not find step information in database' )
     cur.close()
     conn.close()
-    return S_OK( '' )
-  
+    return S_OK( '' )  
 
   def getJobList( self, user ):
     result = self.connect()
@@ -164,15 +162,37 @@ class dbTool:
     conn = result['Value']
     cur = conn.cursor()
     try:
-      cur.execute('SELECT stepCount FROM WORKFLOW WHERE workflowNum=%s', jobID )
+      cur.execute('SELECT stepCount FROM WORKFLOW WHERE workflowNum=%s' % jobID )
     except:
       cur.close()
       conn.close()
       return S_ERROR( 'Error when querying database' )
-    result = int( cur.fetchone()[0] )
+    result = cur.fetchone()
+    if not result:
+      return S_ERROR( 'Can not find workflow %s' % jobID )
     cur.close()
     conn.close()
-    return S_OK( result )
+    return S_OK( int( result[0] ) )
+
+  def getWorkarea( self, jobID, stepID):
+    result = self.connect()
+    if not result['OK']:
+      return result
+    conn = result['Value']
+    cur = conn.cursor()
+    param = ( jobID, stepID )
+    try:
+      cur.execute( 'select workarea from STEP where workflowNum=%s and stepNum=%s', param )
+    except:
+      cur.close()
+      conn.close()
+      return S_ERROR( 'Error when querying database' )
+    result = cur.fetchone()
+    cur.close()
+    conn.close()
+    if not result:
+      return S_ERROR( 'Can not find the step refered' ) 
+    return S_OK( result[0] )    
 
   def updateWorkflow( self, workflowInfo ):
     result = self.connect()
