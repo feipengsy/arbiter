@@ -85,7 +85,7 @@ class dbTool:
     result = cur.fetchall()
     if not result:
       return S_ERROR( 'Can not find job information in database' )
-    for step in job.steps:
+    for step in job.workflow.steps:
       try:
         cur.execute( 'select * from STEP where workflowNum=%s and stepNum=%s ' % ( job.jobID, step.stepID) )
       except:
