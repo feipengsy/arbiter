@@ -98,11 +98,7 @@ class system:
     if not result['OK']:
       return result
     optionTempDirectory = result['Value']
-    result = self.dbTool.checkOptionFile( optionFileList )
-    if not result['OK']:
-      return result
-    optionFileDict = result['Value']
-    for optionFile in optionFileDict['valid']:
+    for optionFile in optionFileList:
       os.chdir( optionTempDirectory )
       os.system( 'boss -q %s' % optionFile )
     for optionFile in optionFileDict['invalid']:
