@@ -34,7 +34,7 @@ class arb_resubmit( baseScript ):
     if not result['OK']:
       return False
     result = result['Value']
-    if len( result['unbound'] ) < 3:
+    if len( result['unbound'] ) < 2:
       print self.__doc__
       return False
     try:

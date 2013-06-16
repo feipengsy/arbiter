@@ -142,7 +142,10 @@ def checkWorkflowStatus( workflowID ):
   return S_OK( 'done' )
 
 def checkStepStatus( workflowID, stepID ):
-  jobDirectory = getJobDirectory( workflowID, stepID )
+  result = getJobDirectory( workflowID, stepID )
+  if not result['OK']:
+    return result
+  jobDirectory = result['Value']
   if not os.path.exists( jobDirectory + 'optionList.txt' ):
     return S_OK( 'unSubmitted' )
   result = checkStatus( workflowID )

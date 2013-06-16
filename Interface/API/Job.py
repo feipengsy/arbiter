@@ -67,7 +67,7 @@ class Job:
   def __checkExistence( self ):
     # check existence of directory first
     jobTempDirectory = self.tempDirectory + 'workflowTemp/'
-    if not os.path.exsits( jobTempDirectory ):
+    if not os.path.exists( jobTempDirectory ):
       return S_ERROR( 'Can not find jobTempDirectory' )
     jobDirectory = jobTempDirectory + str( self.jobID )
     if not os.path.exists( jobDirectory ):
@@ -211,28 +211,6 @@ class Job:
     if not result['OK']:
       return result
     return S_OK()
-    
-
-  def execute( self ):
-    optionList = self.workflow.createCode()
-    self.workflow.execute( optionList )
-
-  def reexecute( self, infoDict ):
-    for k,v in infoDict.items():
-      opstep = self.workflow.steps[int( k )]
-      stepName = opstep.name
-      optionDirectory = ''
-      for p in opstep.parameters:
-        if p.name == 'optionFileDirectory':
-          if p.value[-1] == '/':
-            optionTempDirectory = p.value
-          else:
-            optionTempDirectory = p.value + '/'
-      if not optionDirectory:
-        optionDirectory = self.tempDirectory + 'workflowTemp/' + str( self.jobID ) + '/' + stepName + '/'
-      for optionFile in v:
-        os.chdir( optionDirectory )
-        os.system( 'boss.exe %s' % optionFile )
 
   def submit( self ):
     optionList = self.workflow.createCode()

@@ -43,6 +43,8 @@ class system:
       Generate option files of all steps
     """
     xmlPath = self.tempDirectory + str( jobID ) + '.xml'
+    if not os.path.exists( xmlPath ):
+      return S_ERROR( 'Can not find workflow %s' % jobID )
     job = Job( '', xmlPath )
     job.generate()
     return S_OK()
@@ -72,22 +74,14 @@ class system:
     if not result['OK']:
       return result
     return S_OK()
-    
-
-  def execute( self, jobID ):
-    """
-     Execute the first step of the workflow locally
-    """
-    xmlPath = self.tempDirectory + str( jobID ) + '.xml'
-    job = Job( '', xmlPath )
-    job.execute()
-    return S_OK()
 
   def submit( self, jobID ):
     """
      Submit the first step of the workflow to the queue
     """
     xmlPath = self.tempDirectory + str( jobID ) + '.xml'
+    if not os.path.exists( xmlPath ):
+      return S_ERROR( 'Can not find workflow %s' % jobID )
     job = Job( '', xmlPath )
     job.submit()
     return S_OK()
