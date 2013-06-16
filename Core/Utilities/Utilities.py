@@ -133,7 +133,7 @@ def checkWorkflowStatus( workflowID ):
   jobDirectory = result['Value']
   if not os.path.exists( jobDirectory + 'optionList.txt' ):
     return S_OK( 'unSubmitted' )
-  result = checkStatus( worklowID )
+  result = checkStatus( workflowID )
   if not result['OK']:
     return result
   for stepStatDict in result['Value'].values():
