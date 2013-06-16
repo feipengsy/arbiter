@@ -2,6 +2,19 @@ from arbiter.Core.Utilities.baseScript import *
 from arbiter.Interface.API.System import *
 
 class arb_resubmit( baseScript ):
+  """
+    Re-submit sub-jobs of the workflow.
+    User needs to specify the workflowID and stepID. 
+    option:
+    -f/-F/--failed: Submit jobs that status are failed
+    -r/-R/--running: Submit jobs that status are running
+    -w/-W/--waiting: Submit jobs that status are waiting
+    -d/-D/--done: Submit jobs that status are done
+    -u/-U/--unkonwn: Submit jobs that status are unknown
+    -a/-A/--all: Submit all sub-jobs
+    
+    Usage: arb resubmit ([argument...]) [workflowID] [stepID] ([jobname1] [jobname2]...)
+  """
 
   def __init__( self, argv):
     baseScript.__init__( self )

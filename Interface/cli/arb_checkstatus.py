@@ -11,7 +11,7 @@ class arb_checkstatus(baseScript):
 
   def __init__( self, argv ):
     baseScript.__init__( self )
-    self.argvDict = { 'u' : 'bound', 'U' : 'bound', 'user' : 'bound' }
+    self.argvDict = {}
     self.argv = argv
 
   def execute( self ):
