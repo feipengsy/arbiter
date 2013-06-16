@@ -101,8 +101,6 @@ class system:
     for optionFile in optionFileList:
       os.chdir( optionTempDirectory )
       os.system( 'boss -q %s' % optionFile )
-    for optionFile in optionFileDict['invalid']:
-      print 'Invalid job name: ' + optionFile
     return S_OK()
 
   def checkStatus( self, jobName ):
