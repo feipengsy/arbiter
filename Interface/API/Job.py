@@ -22,7 +22,9 @@ class Job:
     self.workflow = Workflow()
     self.dbTool = dbTool()
     if script:
-      self.__loadJob( script )
+      result = self.__loadJob( script )
+      if not result['OK']:
+        sys.exit(0)
       result = self.__checkExistence()
       if not result['OK']:
         sys.exit(0)
@@ -143,12 +145,18 @@ class Job:
  
   def updateDB( self ):
     for stepID in range( self.stepCount ):
-      stepStatus = checkStepStatus( self.jobID, stepID )
+      result = checkStepStatus( self.jobID, stepID )
+      if not result['OK']:
+        return result
+      stepStatus = result['Value']
       statusDict = { self.jobID : { stepID: { 'status' : stepStatus } } }
       result = self.dbTool.updateStep( statusDict )
       if not result['OK']:
         return result
-    workflowStatus = checkWorkflowStatus( self.jobID )
+    result = checkWorkflowStatus( self.jobID )
+    if not result['OK']:
+      return result
+    workflowStatus = result['Value']
     workflowInfo = { 'jobID' : self.jobID, 'status' : workflowStatus }
     result = self.dbTool.updateWorkflow( workflowInfo )
     if not result['OK']:

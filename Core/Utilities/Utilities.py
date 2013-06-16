@@ -41,8 +41,10 @@ def loadJobFromXML( job, xmlFile ):
           for k,v in pnode.attributes.items():
             splitterInfo[k.encode()] = v.encode()
           job.setStepSplitter( stepUserName, splitterInfo )
-  job.updateDB()
-  return True
+  result = job.updateDB()
+  if not result['OK']:
+    return result
+  return S_OK()
 
 def checkStatus( workflowID ):
   databaseTool = dbTool()
@@ -125,7 +127,10 @@ def checkWorkflowStatus( workflowID ):
   if not result['OK']:
     return result
   stepCount = result['Value']
-  jobDirectory = getJobDirectory( workflowID, 0 )
+  result = getJobDirectory( workflowID, 0 )
+  if not result['OK']:
+    return result
+  jobDirectory = result['Value']
   if not os.path.exists( jobDirectory + 'optionList.txt' ):
     return S_OK( 'unSubmitted' )
   result = checkStatus( worklowID )
