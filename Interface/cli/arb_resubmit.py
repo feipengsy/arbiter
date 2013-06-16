@@ -76,8 +76,8 @@ class arb_resubmit( baseScript ):
         for job in statusDict.keys():
           if statusDict[job] == 'unknown' and job not in jobList:
             jobList.append( job )
-      infoDict = { 'jobID' : workflowID, 'stepID' : stepID, 'optionList' : jobList }
-      result = arbiter.resubmit( infoDict )
-      if not result['OK']:
-        return False
-      return True    
+    infoDict = { 'jobID' : workflowID, 'stepID' : stepID, 'optionList' : jobList }
+    result = arbiter.resubmit( infoDict )
+    if not result['OK']:
+      return False
+    return True    
