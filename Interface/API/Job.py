@@ -71,7 +71,7 @@ class Job:
     jobTempDirectory = self.tempDirectory + 'workflowTemp/'
     if not os.path.exists( jobTempDirectory ):
       return S_ERROR( 'Can not find jobTempDirectory' )
-    jobDirectory = jobTempDirectory + str( self.jobID )
+    jobDirectory = jobTempDirectory + str( self.jobID ) + '/'
     if not os.path.exists( jobDirectory ):
       return S_ERROR( 'Can not find job directory' )
     for step in self.workflow.steps:
