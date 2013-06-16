@@ -38,20 +38,20 @@ class arb_resubmit( baseScript ):
       print self.__doc__
       return False
     try:
-      worklfowID = int(result['unbound'][0])
+      workflowID = int(result['unbound'][0])
       stepID = int(result['unbound'][1])
     except:
       print self.__doc__
       return False
     jobList = result['unbound'][2:]
     arbiter = system()
-    statusresult = arbiter.checkStatus( worklfowID )
+    statusresult = arbiter.checkStatus( workflowID )
     if not statusresult['OK']:
       return False
     statusDict = statusresult['Value'][stepID]
     for job in jobList:
       if job not in statusDict.keys():
-        print 'There is no sub-job %s in worklfow %s step %s' % ( job, workflowID, stepID )
+        print 'There is no sub-job %s in workflow %s step %s' % ( job, workflowID, stepID )
         jobList.remove( job )
     if 'a' in result.keys() or 'A' in result.keys() or 'all' in result.keys():
       jobList = statusDict.keys()
