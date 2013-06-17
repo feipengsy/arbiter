@@ -27,9 +27,16 @@ class Workflow:
     self.currentStepID += 1
     self.steps.append( step )
 
-  def createCode( self, debug = False ):
-    result = self.steps[0].createCode( debug )
-    # Be careful here!
+  def createCode( self, stepID, debug = False, generate = True ):
+    if debug or not generate:
+      resultList = []
+      for step in self.steps:
+        result = step.createCode( debug, generate )
+        resultList.append( result )
+      return resultList
+    result = self.steps[int( stepID )].createCode( debug, generate )
+    for step in self.steps[int( stepID ) + 1:]:
+      step.createCode( debug, False )
     return result
 
   def execute( self, optionList ):

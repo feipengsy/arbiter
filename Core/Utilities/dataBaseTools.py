@@ -30,27 +30,56 @@ class dbTool:
     conn.close()
     return S_OK()
   
-  def addSubJob( self, step, subjobName ):
+  def addSubJob( self, workflowID, stepID, subjobName, inputFile, outputFile ):
     result = self.connect()
     if not result['OK']:
       return result
     conn = result['Value']
     cur = conn.cursor()
-    param = ( step.jobID, step.stepID, subjobName )
+    param = ( workflowID, stepID, subjobName )
     try:
       cur.execute( 'delete from JOB where workflowID=%s and stepID=%s and jobName=%s', param )     
     except:
       cur.close()
       conn.close()
       return S_ERROR( 'Error when querying database' )
-    param = ( step.jobID, step.stepID, subjobName, 'unsubmitted' )
+    param = ( workflowID, stepID, subjobName, 'unsubmitted', inputFile, outputFile )
     try:
-      cur.execute( 'insert into JOB values(%s,%s,%s,%s)', param )     
+      cur.execute( 'insert into JOB values(%s,%s,%s,%s,%s,%s)', param )     
     except:
       cur.close()
       conn.close()
       return S_ERROR( 'Error when adding subjob into database' )
     return S_OK()    
+
+  def getInputFromStep( self, workflowID, stepID, generate ):
+    result = self.connect()
+    if not result['OK']:
+      return result
+    conn = result['Value']
+    cur = conn.cursor()
+    if generate:
+      param = ( workflowID, stepID, 'done' )
+      try:
+        cur.execute( 'select outputFile from JOB where workflowID=%s and stepID=%s and status=%s', param )
+      except:
+        cur.close()
+        conn.close()
+        return S_ERROR( 'Error when getting inputs from database' )
+    else:
+      param = ( workflowID, stepID )
+      try:
+        cur.execute( 'select outputFile from JOB where workflowID=%s and stepID=%s', param )
+      except:
+        cur.close()
+        conn.close()
+        return S_ERROR( 'Error when getting inputs from database' )
+    result = cur.fetchall()
+    inputList = []
+    if result:
+      for tup in result:
+        inputList.append( tup[0] )
+    return result
 
   def deleteJob( self, jobID ):
     result = self.connect()
@@ -69,6 +98,24 @@ class dbTool:
     cur.close()
     conn.close()
     return S_OK()
+
+  def deleteSubJob( self, workflowID, stepID ):
+    result = self.connect()
+    if not result['OK']:
+      return result
+    conn = result['Value']
+    cur = conn.cursor()
+    param = ( workflowID, stepID )
+    try:
+      cur.execute( 'delete from JOB where workflowID=%s and stepID=%s', param )
+    except:
+      cur.close()
+      conn.close()
+      return S_ERROR( 'Error when deleting subjob from database' )
+    cur.close()
+    conn.close()
+    return S_OK()
+      
 
   def checkExistence( self, job ):
     result = self.connect()

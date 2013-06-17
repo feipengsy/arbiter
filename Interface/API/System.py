@@ -86,6 +86,17 @@ class system:
     job.submit()
     return S_OK()
 
+  def push( self, jobID ):
+    """
+      Submit the next step of the workflow
+    """
+    xmlPath = self.tempDirectory + str( jobID ) + '.xml'
+    if not os.path.exists( xmlPath ):
+      return S_ERROR( 'Can not find workflow %s' % jobID )
+    job = Job( '', xmlPath )
+    job.push()
+    return S_OK()
+
   def resubmit( self, infoDict ):
     """
      Re-submit sub-jobs of a workflow

@@ -1,5 +1,6 @@
 import os
 import shutil
+import re
 from arbiter.Core.Workflow.Utilities.Parameter import *
 from arbiter.Core.Utilities.ResolveInputs import *
 from arbiter.Core.Utilities.ReturnValues import *
@@ -56,7 +57,16 @@ class Step:
   def setInputData( self ):
     for parameter in self.parameters:
       if parameter.name == 'input':
-        self.inputData = resolveInputData( parameter.value, parameter.extra )
+        if parameter.value.startswith('step'):
+          self.inputData = parameter.value
+        else:
+          self.inputData = resolveInputData( parameter.value, parameter.extra )
+          
+  def getInputFromStep( self, self.jobID, stepID, generate ):
+    if stepID >= self.stepID:
+      return S_ERROR( 'Input files for step%s must not be from step%s' %( self.stepID, stepID ) )
+    result = self.dbTool.getInputFromStep( self.jobID, stepID, generate )
+    return result
 
   def setParameter( self, name, value, ptype, extra):
     parameter = Parameter( name, value, ptype, extra)
@@ -79,25 +89,38 @@ class Step:
       optionTempDirectory = self.tempDirectory + 'workflowTemp/' + str(self.jobID) + '/' + self.name + '/'
     return optionTempDirectory
 
-  def createCode( self, debug = False ):
+  def createCode( self, debug, generate ):
     generated = self.checkIfGenerated()
     if generated:
-      return generated
+      return S_OK( generated )
     else:
       optionTempDirectory = self.getOptionFileDirectory()
+      self.dbTool.deleteSubJob( self.jobID, self.stepID )
+      if self.inputData.startswith( 'step' ):
+        try:
+          inputStepID = int( self.inputData.strip( 'step' ) )
+        except:
+          return S_ERROR( 'Error when getting inputs: invalid stepID' )
+        result = self.getInputFromStep( inputStepID, generate )
+        if not result['OK']:
+          return result
+        self.inputData = result['Value']
       if self.splitter == None:
         generaterName = self.typeDict[ self.type ]
         generater = globals()[ generaterName ]( self.parameters )
         optionFileName = optionTempDirectory + self.name + '.txt'
-        generater.toTXTFile( optionFileName )
-        if not debug:
+        if generate:
+          inputFile, outputFile = generater.toTXTFile( optionFileName )
+        else:
+          inputFile, outputFile = generater.toTXT( optionFileName )
+        if not debug and generate:
           optionListFile = open( self.tempDirectory + 'workflowTemp/' + str(self.jobID) + '/' + self.name + '/' + 'optionList.txt', 'w' )
           optionListFile.write( optionFileName + '\n' )
           optionListFile.close()
-          self.dbTool.addSubJob( self, subjob.name + '.txt' )
-        return [optionFileName]
+          self.dbTool.addSubJob( self.jobID, self.stepID, subjob.name + '.txt', inputFile, outputFile )
+        return S_OK( [optionFileName] )
       else:
-        if not debug:
+        if not debug and generate:
           optionListFile = open( self.tempDirectory + 'workflowTemp/' + str(self.jobID) + '/' + self.name + '/' + 'optionList.txt', 'w' )
         subjobs = self.splitter.split( self )
         optionFileList = []
@@ -105,15 +128,18 @@ class Step:
           generaterName = self.typeDict[ self.type ]
           generater = globals()[ generaterName ]( subjob.parameters )
           optionFileName = optionTempDirectory + subjob.name + '.txt'
-          generater.toTXTFile( optionFileName )
-          if not debug:
+          if generate:
+            inputFile, outputFile = generater.toTXTFile( optionFileName )
+          else:
+            inputFile, outputFile = generater.toTXT( optionFileName )
+          if not debug and generate:
             optionListFile.write( optionFileName + '\n' )
-            self.dbTool.addSubJob( self, subjob.name + '.txt' )
+            self.dbTool.addSubJob( self.jobID, self.stepID, subjob.name + '.txt', inputFile, outputFile )
           optionFileList.append( optionFileName )
         print 'option files for workflow ' + str(self.jobID) + ' ' + self.name + ' are generated in ' + optionTempDirectory
-        if not debug:
+        if not debug and generate:
           optionListFile.close()
-        return optionFileList
+        return S_OK( optionFileList )
 
   def checkIfGenerated( self ):
     try:

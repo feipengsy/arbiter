@@ -131,6 +131,7 @@ class Job:
       print 'debug mode detected!Will not generate xml file'
       return True
     result = self.create()
+    self.workflow.createCode(-1)
     if not result['OK']:
       return result
     ret = self.workflow.toXML()
@@ -221,10 +222,24 @@ class Job:
     return S_OK()
 
   def submit( self ):
-    optionList = self.workflow.createCode()
+    optionList = self.workflow.createCode( 0 )
     self.workflow.submit( optionList )
     statusDict = { self.jobID : { 0 : { 'onGoing' : 'yes' } } }
     self.dbTool.updateStep( statusDict )
+    
+  def push( self ):
+    result = self.dbTool.getNextStepID()
+    if not result['OK']:
+      return result
+    stepID = int( result['Value'] )
+    optionList = self.workflow.createCode( stepID )
+    statusDict = { self.jobID : { stepID : { 'onGoing' : 'yes' } } }
+    result = self.dbTool.updateStep( statusDict )
+    if not result['OK']:
+      return result
+    self.workflow.submit( optionList )
 
   def generate( self ):
-    optionList = self.workflow.createCode( self.debug )
+    optionList = self.workflow.createCode( 0, self.debug )
+    if self.debug:
+      self.delete()
