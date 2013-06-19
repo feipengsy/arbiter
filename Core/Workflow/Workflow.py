@@ -36,7 +36,7 @@ class Workflow:
         if not result['OK']:
           return result
         resultList.append( result['Value'] )
-      return resultList
+      return S_OK( resultList )
     result = self.steps[int( stepID )].createCode( debug, generate )
     if not result['OK']:
       return result
