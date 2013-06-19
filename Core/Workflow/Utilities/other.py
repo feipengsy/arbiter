@@ -97,8 +97,9 @@ class other:
         ostring = pat.search( optionString ).groups()[0]
         # strip all the space quotes
         nstring = ostring.replace( ' ', '' )
-        nstring = ostring.replace( '"', '' )
-        nstring = ostring.replace( "'", '' )
+        nstring = nstring.replace( '"', '' )
+        nstring = nstring.replace( "'", '' )
+        nstring = nstring.replace( ";", '' )
         # add the output directory
         if outputDirectory:
           nstring = nstring.replace( 'putFile=', 'putFile=' + outputDirectory )
@@ -106,11 +107,10 @@ class other:
         nstring = nstring.replace( 'putFile=', 'putFile="' )
         nstring = nstring + '"'
         # add the semicolon
-        if not nstring.endswith(';'):
-          nstring = nstring + ';'
+        nstring = nstring + ';'
         # get the output
         pat = re.compile( 'RootCnvSvc.digiRootO[uU]tputFile="(.*)";' )
-        outputFile = pat.search( nstring )[0]
+        outputFile = pat.search( nstring ).groups()[0]
         optionString = optionString.replace( ostring, nstring )      
       return ( self.ParametersDict['input'], outputFile, optionString )
 
