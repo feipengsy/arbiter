@@ -141,7 +141,8 @@ class Step:
             if not result['OK']:
               return result
           optionFileList.append( optionFileName )
-        print 'option files for workflow ' + str(self.jobID) + ' ' + self.name + ' are generated in ' + optionTempDirectory
+        if generate:
+          print 'option files for workflow ' + str(self.jobID) + ' ' + self.name + ' are generated in ' + optionTempDirectory
         if not debug and generate:
           optionListFile.close()
         return S_OK( optionFileList )
