@@ -23,6 +23,11 @@ class other:
           self.optionTemplet = value
         if name == 'input':
           self.ParametersDict['input'] = value
+        if name == 'output':
+          if value[-1] == '/':
+            self.ParametersDict['output'] = value
+          else:
+            self.ParametersDict['output'] = value + '/'
         if name == 'count':
           self.subJobCount = value
         if name == 'table':
@@ -55,15 +60,10 @@ class other:
           outputString = ''
       else:
         outputString = ''
-      for parameter in self.parametersList:
-        name = parameter.getName()
-        value = parameter.getValue()
-        if name == 'output':
-          if value[-1] == '/':
-            outputString = value + outputString
-          else:
-            outputString = value + '/' + outputString
       #generate table string
+      outputDirectory = ''
+      if self.ParametersDict['output']:
+        outputDirectory = self.ParametersDict['output']
       tableString = ''
       if self.ParametersDict['table']:
         tableString = self.ParametersDict['table']
@@ -85,19 +85,38 @@ class other:
       # i/o assignment
       optionString = optionString.replace( '"#INPUT"', inputString )
       optionString = optionString.replace( '#INPUT', inputString )
-      optionString = optionString.replace( '#OUTPUT', outputString )
-      
+      optionString = optionString.replace( '#OUTPUT', outputString )      
       optionString = optionString.replace( '#NUMBER', str(self.subJobCount) )
       optionString = optionString.replace( '#RANDOM', str(random.randint(1000,9999)) )
       if tableString:
         pat = re.compile( '(EvtDecay.userDecayTableName.*".*".*;)' )
-        optionString = optionString.replace( pat.search( optionString ).groups()[0], 'EvtDecay.userDecayTableName="' + tableString + '";' )
-
-      return optionString
+        if pat.search( optionString ):
+          optionString = optionString.replace( pat.search( optionString ).groups()[0], 'EvtDecay.userDecayTableName="' + tableString + '";' )
+      pat = re.compile( '(RootCnvSvc.digiRootO[uU]tputFile *=.*)\n' )
+      if pat.search( optionString ):
+        ostring = pat.search( optionString ).groups()[0]
+        # strip all the space quotes
+        nstring = ostring.replace( ' ', '' )
+        nstring = ostring.replace( '"', '' )
+        nstring = ostring.replace( "'", '' )
+        # add the output directory
+        if outputDirectory:
+          nstring = nstring.replace( 'putFile=', 'putFile=' + outputDirectory )
+        # add the quotes
+        nstring = nstring.replace( 'putFile=', 'putFile="' )
+        nstring = nstring + '"'
+        # add the semicolon
+        if not nstring.endswith(';'):
+          nstring = nstring + ';'
+        # get the output
+        pat = re.compile( 'RootCnvSvc.digiRootO[uU]tputFile="(.*)";' )
+        outputFile = pat.search( nstring )[0]
+        optionString = optionString.replace( ostring, nstring )      
+      return ( self.ParametersDict['input'], outputFile, optionString )
 
   def toTXTFile( self, filename ):
     f = open( filename, 'w+')
-    ret = self.toTXT()
+    inputList, outputFile, ret = self.toTXT()
     f.write( ret )
-    f.close
-    return filename
+    f.close()
+    return ( inputList, outputFile, filename )

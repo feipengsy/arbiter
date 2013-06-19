@@ -62,7 +62,7 @@ class Step:
         else:
           self.inputData = resolveInputData( parameter.value, parameter.extra )
           
-  def getInputFromStep( self, self.jobID, stepID, generate ):
+  def getInputFromStep( self, stepID, generate ):
     if stepID >= self.stepID:
       return S_ERROR( 'Input files for step%s must not be from step%s' %( self.stepID, stepID ) )
     result = self.dbTool.getInputFromStep( self.jobID, stepID, generate )

@@ -30,12 +30,13 @@ class dbTool:
     conn.close()
     return S_OK()
   
-  def addSubJob( self, workflowID, stepID, subjobName, inputFile, outputFile ):
+  def addSubJob( self, workflowID, stepID, subjobName, inputFileList, outputFile ):
     result = self.connect()
     if not result['OK']:
       return result
     conn = result['Value']
     cur = conn.cursor()
+    inputFile = ';'.join( inputFileList )
     param = ( workflowID, stepID, subjobName )
     try:
       cur.execute( 'delete from JOB where workflowID=%s and stepID=%s and jobName=%s', param )     
