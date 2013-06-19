@@ -1,6 +1,4 @@
-import os
-import shutil
-import re
+import os,shutil,re
 from arbiter.Core.Workflow.Utilities.Parameter import *
 from arbiter.Core.Utilities.ResolveInputs import *
 from arbiter.Core.Utilities.ReturnValues import *
@@ -96,15 +94,18 @@ class Step:
     else:
       optionTempDirectory = self.getOptionFileDirectory()
       self.dbTool.deleteSubJob( self.jobID, self.stepID )
-      if self.inputData.startswith( 'step' ):
-        try:
-          inputStepID = int( self.inputData.strip( 'step' ) )
-        except:
-          return S_ERROR( 'Error when getting inputs: invalid stepID' )
-        result = self.getInputFromStep( inputStepID, generate )
-        if not result['OK']:
-          return result
-        self.inputData = result['Value']
+      if type( self.inputData ) != type( [] ):
+        if self.inputData.startswith( 'step' ):
+          try:
+            inputStepID = int( self.inputData.strip( 'step' ) )
+          except:
+            return S_ERROR( 'Error when getting inputs: invalid stepID' )
+          result = self.getInputFromStep( inputStepID, generate )
+          if not result['OK']:
+            return result
+          self.inputData = result['Value']
+        else:
+          return S_ERROR( 'invalid input' )
       if self.splitter == None:
         generaterName = self.typeDict[ self.type ]
         generater = globals()[ generaterName ]( self.parameters )

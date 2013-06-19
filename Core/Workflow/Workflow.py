@@ -32,12 +32,19 @@ class Workflow:
       resultList = []
       for step in self.steps:
         result = step.createCode( debug, generate )
-        resultList.append( result )
+        if not result['OK']:
+          return result
+        resultList.append( result['Value'] )
       return resultList
     result = self.steps[int( stepID )].createCode( debug, generate )
+    if not result['OK']:
+      return result
+    optionFileList = result['Value']
     for step in self.steps[int( stepID ) + 1:]:
-      step.createCode( debug, False )
-    return result
+      result = step.createCode( debug, False )
+      if not result['OK']:
+        return result
+    return S_OK( optionFileList )
 
   def execute( self, optionList ):
     for optionFile in optionList:

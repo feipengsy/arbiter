@@ -131,9 +131,13 @@ class Job:
       print 'debug mode detected!Will not generate xml file'
       return True
     result = self.create()
-    self.workflow.createCode(-1)
     if not result['OK']:
-      return result
+      self.delete()
+      sys.exit(0)
+    result = self.workflow.createCode(-1)
+    if not result['OK']:
+      self.delete()
+      sys.exit(0)
     ret = self.workflow.toXML()
     xmlFileName = self.tempDirectory + str( self.jobID ) + '.xml'
     if os.path.exists( xmlFileName ):
