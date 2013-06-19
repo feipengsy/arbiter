@@ -134,7 +134,7 @@ class Job:
     if not result['OK']:
       self.delete()
       sys.exit(0)
-    result = self.workflow.createCode(-1)
+    result = self.workflow.createCode( -1, False, False )
     if not result['OK']:
       self.delete()
       sys.exit(0)

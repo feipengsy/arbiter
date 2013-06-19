@@ -113,12 +113,12 @@ class Step:
         if generate:
           inputFile, outputFile = generater.toTXTFile( optionFileName )
         else:
-          inputFile, outputFile = generater.toTXT( optionFileName )
+          inputFile, outputFile = generater.toTXT()
         if not debug and generate:
           optionListFile = open( self.tempDirectory + 'workflowTemp/' + str(self.jobID) + '/' + self.name + '/' + 'optionList.txt', 'w' )
           optionListFile.write( optionFileName + '\n' )
           optionListFile.close()
-          result = self.dbTool.addSubJob( self.jobID, self.stepID, subjob.name + '.txt', inputFile, outputFile )
+          result = self.dbTool.addSubJob( self.jobID, self.stepID, subjob.name + '.txt', outputFile )
           if not result['OK']:
             return result
         return S_OK( [optionFileName] )
@@ -134,10 +134,10 @@ class Step:
           if generate:
             inputFile, outputFile, oname = generater.toTXTFile( optionFileName )
           else:
-            inputFile, outputFile, ostring = generater.toTXT( optionFileName )
+            inputFile, outputFile, ostring = generater.toTXT()
           if not debug and generate:
             optionListFile.write( optionFileName + '\n' )
-            result = self.dbTool.addSubJob( self.jobID, self.stepID, subjob.name + '.txt', inputFile, outputFile )
+            result = self.dbTool.addSubJob( self.jobID, self.stepID, subjob.name + '.txt', outputFile )
             if not result['OK']:
               return result
           optionFileList.append( optionFileName )
