@@ -1,7 +1,5 @@
 import os,shutil,re
 from arbiter.Core.Workflow.Utilities.Parameter import *
-from arbiter.Core.Utilities.ResolveInputs import *
-from arbiter.Core.Utilities.ReturnValues import *
 from arbiter.Core.Workflow.Utilities.jobOptions_rec import *
 from arbiter.Core.Workflow.Utilities.jobOptions_rec_data import *
 from arbiter.Core.Workflow.Utilities.other import *
@@ -9,6 +7,8 @@ from arbiter.Core.Workflow.Utilities.Splitter import *
 from arbiter.Core.Workflow.Workflow import *
 from arbiter.Core.Utilities.Constants import *
 from arbiter.Core.Utilities.dataBaseTools import *
+from arbiter.Core.Utilities.ResolveInputs import *
+from arbiter.Core.Utilities.ReturnValues import *
 
 class Step:
 
@@ -118,7 +118,9 @@ class Step:
           optionListFile = open( self.tempDirectory + 'workflowTemp/' + str(self.jobID) + '/' + self.name + '/' + 'optionList.txt', 'w' )
           optionListFile.write( optionFileName + '\n' )
           optionListFile.close()
-          self.dbTool.addSubJob( self.jobID, self.stepID, subjob.name + '.txt', inputFile, outputFile )
+          result = self.dbTool.addSubJob( self.jobID, self.stepID, subjob.name + '.txt', inputFile, outputFile )
+          if not result['OK']:
+            return result
         return S_OK( [optionFileName] )
       else:
         if not debug and generate:
@@ -130,12 +132,14 @@ class Step:
           generater = globals()[ generaterName ]( subjob.parameters )
           optionFileName = optionTempDirectory + subjob.name + '.txt'
           if generate:
-            inputFile, outputFile = generater.toTXTFile( optionFileName )
+            inputFile, outputFile, oname = generater.toTXTFile( optionFileName )
           else:
-            inputFile, outputFile = generater.toTXT( optionFileName )
+            inputFile, outputFile, ostring = generater.toTXT( optionFileName )
           if not debug and generate:
             optionListFile.write( optionFileName + '\n' )
-            self.dbTool.addSubJob( self.jobID, self.stepID, subjob.name + '.txt', inputFile, outputFile )
+            result = self.dbTool.addSubJob( self.jobID, self.stepID, subjob.name + '.txt', inputFile, outputFile )
+            if not result['OK']:
+              return result
           optionFileList.append( optionFileName )
         print 'option files for workflow ' + str(self.jobID) + ' ' + self.name + ' are generated in ' + optionTempDirectory
         if not debug and generate:

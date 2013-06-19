@@ -2,6 +2,7 @@ import os
 from arbiter.Core.Workflow.Step import Step
 from arbiter.Core.Workflow.Utilities.Parameter import *
 from arbiter.Core.Utilities.Constants import *
+from arbiter.Core.Utilities.ReturnValues import *
 
 class Workflow:
 
