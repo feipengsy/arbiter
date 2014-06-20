@@ -3,7 +3,6 @@ import sys
 import re
 from xml.dom import minidom
 from arbiter.Core.Utilities.Constants import *
-from arbiter.Core.Utilities.dataBaseTools import *
 
 
 def readend( testfile ):
@@ -22,7 +21,6 @@ def loadJobFromXML( job, xmlFile ):
   xml = minidom.parse( xmlFile ).firstChild
   job.jobID = int( xml.attributes['jobID'].value.encode() )
   job.name = xml.attributes['jobName'].value.encode()
-  job.user = xml.attributes['user'].value.encode()
   for snode in xml.childNodes:
     if snode.nodeName == 'step':
       stepType = snode.attributes['type'].value.encode()
@@ -41,17 +39,11 @@ def loadJobFromXML( job, xmlFile ):
           for k,v in pnode.attributes.items():
             splitterInfo[k.encode()] = v.encode()
           job.setStepSplitter( stepUserName, splitterInfo )
-  result = job.updateDB()
-  if not result['OK']:
-    return result
   return S_OK()
 
-def checkStatus( workflowID ):
-  databaseTool = dbTool()
-  result = databaseTool.getStepCount( int( workflowID ) )
-  if not result['OK']:
-    return result
-  stepCount = result['Value']
+def checkStatus( job ):
+  workflowID = job.jobID
+  stepCount = job.stepCount
   allStatDict = {}
   for i in range( stepCount ):
     result = getJobDirectory( workflowID, i )
@@ -121,19 +113,16 @@ def checkStatus( workflowID ):
     allStatDict[i] = statDict
   return S_OK( allStatDict )
 
-def checkWorkflowStatus( workflowID ):
-  databaseTool = dbTool()
-  result = databaseTool.getStepCount( int( workflowID ) )
-  if not result['OK']:
-    return result
-  stepCount = result['Value']
+def checkWorkflowStatus( job ):
+  workflowID = job.jobID
+  stepCount = job.stepCount
   result = getJobDirectory( workflowID, 0 )
   if not result['OK']:
     return result
   jobDirectory = result['Value']
   if not os.path.exists( jobDirectory + 'optionList.txt' ):
     return S_OK( 'unSubmitted' )
-  result = checkStatus( workflowID )
+  result = checkStatus( job )
   if not result['OK']:
     return result
   for stepStatDict in result['Value'].values():
@@ -146,14 +135,15 @@ def checkWorkflowStatus( workflowID ):
         return S_OK( 'running' )
   return S_OK( 'done' )
 
-def checkStepStatus( workflowID, stepID ):
+def checkStepStatus( job, stepID ):
+  workflowID = job.jobID
   result = getJobDirectory( workflowID, stepID )
   if not result['OK']:
     return result
   jobDirectory = result['Value']
   if not os.path.exists( jobDirectory + 'optionList.txt' ):
     return S_OK( 'unSubmitted' )
-  result = checkStatus( workflowID )
+  result = checkStatus( job )
   if not result['OK']:
     return result
   for stat in result['Value'][int( stepID )].values():
@@ -174,15 +164,3 @@ def getJobDirectory( workflowID, stepID ):
   if not os.path.exists( finalDirectory ):
     return S_ERROR( 'Can not find the step temp directory' )
   return S_OK( finalDirectory )
-
-def getUserName():
-  user = os.popen('echo $USER').read()
-  user = user.strip()
-  return user
-
-def checkUserName( user ):
-  userName = os.popen('echo $USER').read()
-  userName = user.strip()
-  if user != userName:
-    return False
-  return True

@@ -3,7 +3,7 @@ import sys
 from arbiter.Core.Workflow.Workflow import *
 from arbiter.Core.Utilities.ReturnValues import *
 from arbiter.Core.Utilities.Utilities import *
-from arbiter.Core.Utilities.dataBaseTools import *
+from arbiter.Core.Utilities.dataTools import *
 from arbiter.Core.Utilities.Constants import *
 
 class Job:
@@ -17,18 +17,18 @@ class Job:
     self.debug = False
     self.workDirectory = os.getcwd()
     self.status = 'unSubmitted'
-    self.user = ''
     self.stepCount = 0
     self.workflow = Workflow()
-    self.dbTool = dbTool()
+    self.dataTool = dataTool( self )
     if script:
       result = self.__loadJob( script )
       if not result['OK']:
         sys.exit(0)
+      self.dataTool = dataTool( self )
       result = self.__checkExistence()
       if not result['OK']:
         sys.exit(0)
-      result = self.updateDB()
+      result = self.updateData()
       if not result['OK']:
         sys.exit(0)
       #checkUserName( self.user )
@@ -48,17 +48,16 @@ class Job:
     # this means job is already loaded from xml
       return S_OK()
     else:
-      result = self.dbTool.getNewWorkflowID()
+      result = self.dataTool.getNewWorkflowID()
       if not result['OK']:
         return result      
       newID = int( result['Value'] )
       #dirDirectory = self.tempDirectory + 'workflowTemp/'
       #os.chdir( dirDirectory )
       #os.mkdir( newNumString )
-      self.user = getUserName()
       self.jobID = int( newID )
       self.workflow.jobID = self.jobID
-      self.workflow.user = self.user
+      self.dataTool.jobID = self.jobID
       #self.dbTool.addJob( self )
       return S_OK()
 
@@ -79,12 +78,9 @@ class Job:
       if not os.path.exists( stepDirectory ):
         return S_ERROR( 'Can not find step directory' )
     # check database
-    result = self.dbTool.checkExistence( self )
+    result = self.dataTool.checkExistence( self )
     if not result['OK']:
       return result
-    result = checkUserName( self.user )
-    if not result:
-      return S_ERROR( 'User name not matched' )
     return S_OK()
 
   def setName( self, jobName ):
@@ -95,7 +91,6 @@ class Job:
       return S_OK()
 
   def addStep( self, sinfo ):
-
     stepInfoList = sinfo.split('/')
     stepType = stepInfoList[0]
     stepName = stepInfoList[1]
@@ -141,29 +136,28 @@ class Job:
     ret = self.workflow.toXML()
     xmlFileName = self.tempDirectory + str( self.jobID ) + '.xml'
     if os.path.exists( xmlFileName ):
-      print 'xmlFile already exists, this is usually because someone cleaned database, please check and remove old worklfow information'
+      print 'xmlFile already exists, this is usually because someone cleaned old data files, please check and remove old worklfow information'
       sys.exit(0)
     xmlFile = open( self.tempDirectory + str( self.jobID ) + '.xml', 'w' )
     xmlFile.write( ret )
     xmlFile.close()
     print 'New workflow generated! The ID is : ' + str( self.jobID )
  
-  def updateDB( self ):
+  def updateData( self ):
+    statusDict = { }
     for stepID in range( self.stepCount ):
-      result = checkStepStatus( self.jobID, stepID )
+      result = checkStepStatus( self, stepID )
       if not result['OK']:
         return result
       stepStatus = result['Value']
-      statusDict = { self.jobID : { stepID: { 'status' : stepStatus } } }
-      result = self.dbTool.updateStep( statusDict )
-      if not result['OK']:
-        return result
-    result = checkWorkflowStatus( self.jobID )
+      statusDict[stepID] = stepStatus
+    result = self.dataTool.updateStep( statusDict )
     if not result['OK']:
       return result
-    workflowStatus = result['Value']
-    workflowInfo = { 'jobID' : self.jobID, 'status' : workflowStatus }
-    result = self.dbTool.updateWorkflow( workflowInfo )
+    result = checkWorkflowStatus( self )
+    if not result['OK']:
+      return result
+    result = self.dataTool.updateWorkflow( result['Value'] )
     if not result['OK']:
       return result
     return S_OK()
@@ -181,7 +175,7 @@ class Job:
         os.mkdir( jobDirectory )
       except:
         return S_ERROR( 'Can not create workflow.\nFailed to Create workflow' )
-    result = self.dbTool.addJob( self )
+    result = self.dataTool.addJob( self )
     if not result['OK']:
       print 'Failed to create workflow'
       self.delete()
@@ -194,7 +188,7 @@ class Job:
         print 'Fail to create workflow'
         self.delete()
         return result
-      result = self.dbTool.addStep( step )
+      result = self.dataTool.addStep( step )
       if not result['OK']:
         print 'Fail to create workflow'
         self.delete()
@@ -202,10 +196,6 @@ class Job:
     return S_OK()
 
   def delete( self ):
-    # check if user name matched
-    result = checkUserName( self.user )
-    if not result:
-      return S_ERROR( 'Can not remove workflow belong to others' )
     # remove the directory of the workflow
     xmlFile = self.tempDirectory + str( self.jobID ) + '.xml'
     if os.path.exists( xmlFile ):
@@ -220,7 +210,7 @@ class Job:
       except:
         return S_ERROR( 'Can not remove job directory' )
     # remove information from the database
-    result = self.dbTool.deleteJob( self.jobID )
+    result = self.dataTool.deleteJob( self.jobID )
     if not result['OK']:
       return result
     return S_OK()
@@ -228,17 +218,17 @@ class Job:
   def submit( self ):
     optionList = self.workflow.createCode( 0 )
     self.workflow.submit( optionList )
-    statusDict = { self.jobID : { 0 : { 'onGoing' : 'yes' } } }
-    self.dbTool.updateStep( statusDict )
+    statusDict = { 0 : 'yes' }
+    self.dataTool.updateStep( statusDict, 'onGoing' )
     
   def push( self ):
-    result = self.dbTool.getNextStepID()
+    result = self.dataTool.getNextStepID()
     if not result['OK']:
       return result
     stepID = int( result['Value'] )
     optionList = self.workflow.createCode( stepID )
     statusDict = { self.jobID : { stepID : { 'onGoing' : 'yes' } } }
-    result = self.dbTool.updateStep( statusDict )
+    result = self.dataTool.updateStep( statusDict )
     if not result['OK']:
       return result
     self.workflow.submit( optionList )
